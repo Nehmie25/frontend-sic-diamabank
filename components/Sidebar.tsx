@@ -101,7 +101,7 @@ const sections: Section[] = [
         label: "Gestion des utilisateurs",
         chevron: true,
         subLinks: [
-          { label: "Compte utilisateurs" },
+          { label: "Compte utilisateurs" , href: "/administration/compte-utilisateur"},
           { label: "Utilisateurs bloqués" },
         ]
       },
