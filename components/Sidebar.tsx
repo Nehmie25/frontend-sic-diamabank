@@ -64,7 +64,19 @@ const sections: Section[] = [
   {
     title: "Déclaration",
     links: [
-      { icon: SlDisc, label: "Validation des déclarations", chevron: true },
+      {
+        icon: SlDisc,
+        label: "Validation des déclarations",
+        chevron: true,
+        subLinks: [
+          {label: "Personnes physiques", href: "/declaration/validation-des-declarations/personnes-physiques" },
+          {label: "Personnes morales", href: "/declaration/validation-des-declarations/personnes-morales" },
+          {label: "Comptes débiteurs", href: "/declaration/validation-des-declarations/comptes-debiteurs" },
+          {label: "Engagements", href: "/declaration/validation-des-declarations/engagements" },
+          {label: "Encours d'engagements" },
+        ]
+      },
+
       { icon: SlDisc, label: "Supervalidation des déclarations", chevron: true },
       { icon: AiFillDatabase, label: "Données à générer", chevron: true },
       { icon: LuDatabase, label: "Suivi des générations", chevron: true },
