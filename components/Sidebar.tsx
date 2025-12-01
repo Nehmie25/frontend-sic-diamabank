@@ -77,7 +77,17 @@ const sections: Section[] = [
         ]
       },
 
-      { icon: SlDisc, label: "Supervalidation des déclarations", chevron: true },
+      { icon: SlDisc,
+        label: "Supervalidation des déclarations",
+        chevron: true,
+        subLinks: [
+          {label: "Personnes physiques", href: "/declaration/supervalidation-des-declarations/personnes-physiques" },
+          {label: "Personnes morales", href: "/declaration/supervalidation-des-declarations/personnes-morales" },
+          {label: "Comptes débiteurs", href: "/declaration/supervalidation-des-declarations/comptes-debiteurs" },
+          {label: "Engagements", href: "/declaration/supervalidation-des-declarations/engagements" },
+          {label: "Encours d'engagements" },
+        ]
+      },
       { 
         icon: AiFillDatabase,
         label: "Données à générer",
