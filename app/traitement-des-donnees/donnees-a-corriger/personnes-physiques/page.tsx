@@ -95,7 +95,7 @@ export default function PersonnesPhysiquesPage() {
                     <td className="px-3 py-2 text-center text-slate-500">
                       <button
                         type="button"
-                        onClick={() => router.push(`/personnes-physiques/${personne.id}`)}
+                        onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
                         className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
                       >
                         <MdOutlineZoomIn size={18} />

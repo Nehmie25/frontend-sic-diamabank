@@ -1,8 +1,8 @@
 'use client'
 import Image from "next/image"
 import type { ComponentType } from "react"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
 import { AiFillDatabase, AiOutlineStop } from "react-icons/ai"
 import { BsPen } from "react-icons/bs"
 import { CiCreditCard1 } from "react-icons/ci"
@@ -52,7 +52,7 @@ const sections: Section[] = [
         label: "Données chargées à corriger",
         chevron: true,
         subLinks: [
-          { label: "Personnes physiques", href: "/personnes-physiques" },
+          { label: "Personnes physiques", href: "/traitement-des-donnees/donnees-a-corriger/personnes-physiques" },
           { label: "Personnes morales" },
           { label: "Comptes débiteurs" },
           { label: "Engagements" },
@@ -135,13 +135,38 @@ const sections: Section[] = [
 
 const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
   const [openItem, setOpenItem] = useState<string | null>(null)
-  const [activeSub, setActiveSub] = useState<string>("Personnes physiques")
+  const [activeSub, setActiveSub] = useState<string>("")
+  const pathname = usePathname()
   const router = useRouter()
   const closeIfMobile = () => {
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
       onClose?.()
     }
   }
+
+  const matchesPath = (target?: string) => {
+    if (!target) return false
+    return pathname === target || pathname.startsWith(`${target}/`)
+  }
+
+  useEffect(() => {
+    let matchedParent: string | null = null
+    let matchedSub: string | null = null
+
+    sections.forEach((section) => {
+      section.links.forEach((link) => {
+        if (!link.subLinks) return
+        const sub = link.subLinks.find((item) => matchesPath(item.href))
+        if (sub) {
+          matchedParent = link.label
+          matchedSub = sub.label
+        }
+      })
+    })
+
+    if (matchedParent) setOpenItem(matchedParent)
+    if (matchedSub) setActiveSub(matchedSub)
+  }, [pathname])
 
   return (
     <aside
@@ -175,13 +200,19 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
             <ul className="space-y-1 text-sm text-slate-700">
               {section.links.map((link) => {
                 const isOpen = openItem === link.label && link.subLinks
+                const hasActiveChild = link.subLinks?.some((sub) => matchesPath(sub.href))
+                const isActiveLink = matchesPath(link.href) || hasActiveChild
                 return (
                   <li key={link.label} className="space-y-1">
                     {link.subLinks ? (
                       <button
                         type="button"
                         onClick={() => setOpenItem(isOpen ? null : link.label)}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                          isActiveLink
+                            ? "bg-[#ECF3FF] text-[#1E4F9B] font-semibold"
+                            : "hover:bg-blue-50 hover:text-blue-700"
+                        }`}
                       >
                         <link.icon className="text-base" />
                         <span className="flex-1 text-[13px] font-medium">{link.label}</span>
@@ -198,7 +229,11 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                             closeIfMobile()
                           }
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                          isActiveLink
+                            ? "bg-[#ECF3FF] text-[#1E4F9B] font-semibold"
+                            : "hover:bg-blue-50 hover:text-blue-700"
+                        }`}
                       >
                         <link.icon className="text-base" />
                         <span className="flex-1 text-[13px] font-medium">{link.label}</span>
@@ -209,7 +244,7 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                     {isOpen ? (
                       <div className="ml-6 mt-1 border-l-4 border-blue-700 pl-3 space-y-1">
                         {link.subLinks.map((sub) => {
-                          const isActive = activeSub === sub.label
+                          const isActive = matchesPath(sub.href) || activeSub === sub.label
                           return (
                             <button
                               type="button"
