@@ -78,7 +78,7 @@ export default function ConnexionPage() {
 
       <div className="relative w-full h-screen">
         <Image
-          src="/login_images.jpg"
+          src="/image_login.jpg"
           alt="Image full page"
           fill
           className="object-cover"
