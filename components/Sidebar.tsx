@@ -78,7 +78,19 @@ const sections: Section[] = [
       },
 
       { icon: SlDisc, label: "Supervalidation des déclarations", chevron: true },
-      { icon: AiFillDatabase, label: "Données à générer", chevron: true },
+      { 
+        icon: AiFillDatabase,
+        label: "Données à générer",
+        chevron: true,
+        subLinks: [
+          {label: "Personnes physiques", href: "/declaration/donnees-a-generer/personnes-physiques" },
+          {label: "Personnes morales", href: "/declaration/donnees-a-generer/personnes-morales" },
+          {label: "Comptes débiteurs", href: "/declaration/donnees-a-generer/comptes-debiteurs" },
+          {label: "Engagements", href: "/declaration/donnees-a-generer/engagements" },
+          {label: "Encours d'engagements" },
+        ]
+       },
+      
       { icon: LuDatabase, label: "Suivi des générations", chevron: true },
     ],
   },
