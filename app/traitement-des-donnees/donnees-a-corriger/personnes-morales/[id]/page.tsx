@@ -6,11 +6,11 @@ import { useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
 
-const stepLabels = ["Informations générales", "Pièces d’identités", "Comptes associés", "Infos complémentaires"]
+const stepLabels = ["Informations générales", "Documents légaux", "Comptes associés", "Infos complémentaires"]
 
-const piecesIdentite = [
-  { numero: "123456789", pays: "GN", lieu: "Conakry", dateEmission: "2023-01-01", dateValidite: "2028-01-01" },
-  { numero: "0123456789", pays: "XX", lieu: "N/A", dateEmission: "2022-01-01", dateValidite: "2025-01-01" },
+const documentsLegaux = [
+  { type: "RCCM", numero: "GN-KAL-2024-001", pays: "GN", lieu: "Kaloum", dateEmission: "2024-01-10", dateValidite: "2029-01-10" },
+  { type: "NIF", numero: "NIF-2024-9988", pays: "GN", lieu: "DGI", dateEmission: "2023-05-01", dateValidite: "2026-05-01" },
 ]
 
 const comptesAssocies = [
@@ -64,7 +64,7 @@ const Field = ({
   )
 }
 
-export default function PersonnePhysiqueDetail() {
+export default function PersonneMoraleDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
@@ -99,8 +99,8 @@ export default function PersonnePhysiqueDetail() {
 
         <div className="flex-1 overflow-y-auto px-4 pb-10 pt-4 sm:px-6 space-y-4">
           <div className="flex flex-col gap-2">
-            <div className="text-xs uppercase tracking-wide text-slate-500">Formulaire d’édition de personne physique</div>
-            <div className="text-sm font-semibold text-slate-800">Personne physique</div>
+            <div className="text-xs uppercase tracking-wide text-slate-500">Formulaire d’édition de personne morale</div>
+            <div className="text-sm font-semibold text-slate-800">Personne morale</div>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm">
@@ -109,46 +109,45 @@ export default function PersonnePhysiqueDetail() {
 
           {currentStep === 0 ? (
             <>
-              <SectionCard title="Références" error="Champs obligatoires manquants">
+              <SectionCard title="Références légales" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-4">
                   <Field label="Nature du client" required error="Ce champ peut prendre les valeurs 0 ou 1" />
-                  <Field label="Numéro d’identification national" value="12345678" success />
-                  <Field label="Numéro client chez le participant" value="12345678901" />
-                  <Field label="Date de création" value="2023-12-10" success />
+                  <Field label="RCCM / Registre du commerce" value="GN-KAL-2024-001" success />
+                  <Field label="N° identification fiscale" value="NIF-2024-9988" />
+                  <Field label="Date de constitution" value="2010-03-12" success />
                 </div>
               </SectionCard>
 
-              <SectionCard title="Identité" error="Champs obligatoires manquants">
+              <SectionCard title="Identité de la société" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Nom de naissance du client" value="SYLLA" required error="Champ obligatoire manquant" />
-                  <Field label="Prénom du client" value="Mamadou" required />
-                  <Field label="Date de naissance" value="2000-01-01" required success />
-                  <Field label="Nom marital du client" />
-                  <Field label="Sexe du client" value="M" required />
-                  <Field label="Nom du client" value="(M)-Masculin" />
-                  <Field label="Prénoms du client" value="(Z)-Marié(e)" />
-                  <Field label="Pays de résidence" value="Abidjan" />
-                  <Field label="Nationalité du client" value="GN" />
+                  <Field label="Raison sociale" value="Société Minière Kankou" required success />
+                  <Field label="Sigle" value="SMK" />
+                  <Field label="Forme juridique" value="SA" required />
+                  <Field label="Secteur d’activité" value="Mines" />
+                  <Field label="Pays d’immatriculation" value="GN" required />
+                  <Field label="Pays d’activité principale" value="GN" />
+                  <Field label="Statut juridique" value="Privée" />
+                  <Field label="Capital social" value="5 000 000 000" />
                 </div>
               </SectionCard>
 
-              <SectionCard title="Adresse" error="Champs obligatoires manquants">
+              <SectionCard title="Adresse et contacts" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-5">
-                  <Field label="N° de téléphone" value="0022468920014" required error="10/12/14 suivi de 9 chiffres ou +224 suivi de 9 chiffres" />
-                  <Field label="Email" required error="Champ obligatoire manquant" />
-                  <Field label="Sous tutelle/curelle" />
+                  <Field label="Téléphone siège" value="+224620000001" required error="10/12/14 suivi de 9 chiffres ou +224 suivi de 9 chiffres" />
+                  <Field label="Email" value="contact@smk.gn" required />
+                  <Field label="Site web" value="www.smk.gn" />
                   <Field label="Pays de résidence" value="GN" />
-                  <Field label="Commune de l’adresse" value="Conakry, Plateau" />
-                  <Field label="Adresse" value="Conakry, Plateau" />
+                  <Field label="Ville" value="Conakry" />
+                  <Field label="Adresse" value="Kaloum, Avenue de la République" />
                   <Field label="Code postal" required error="Champ obligatoire manquant" />
+                  <Field label="Contact principal" value="Mamadou Bah" />
                 </div>
-                {/* <div className="mt-3 rounded-md bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">Liste des erreurs</div> */}
               </SectionCard>
             </>
           ) : currentStep === 1 ? (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-4 py-3">
-                <h2 className="text-base font-semibold text-slate-800">Liste des pièces d’identité</h2>
+                <h2 className="text-base font-semibold text-slate-800">Documents légaux</h2>
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <input
@@ -163,7 +162,7 @@ export default function PersonnePhysiqueDetail() {
                     onClick={() => setShowPieceModal(true)}
                     className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
                   >
-                    Ajouter une pièce
+                    Ajouter un document
                   </button>
                 </div>
               </div>
@@ -171,6 +170,7 @@ export default function PersonnePhysiqueDetail() {
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                     <tr>
+                      <th className="px-3 py-2 text-left">Type de document</th>
                       <th className="px-3 py-2 text-left">Numéro de pièce</th>
                       <th className="px-3 py-2 text-left">Pays d’émission</th>
                       <th className="px-3 py-2 text-left">Lieu d’émission</th>
@@ -179,8 +179,9 @@ export default function PersonnePhysiqueDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {piecesIdentite.map((piece, idx) => (
+                    {documentsLegaux.map((piece, idx) => (
                       <tr key={piece.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+                        <td className="px-3 py-2">{piece.type}</td>
                         <td className="px-3 py-2">{piece.numero}</td>
                         <td className="px-3 py-2">{piece.pays}</td>
                         <td className="px-3 py-2">{piece.lieu}</td>
@@ -249,10 +250,10 @@ export default function PersonnePhysiqueDetail() {
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="grid gap-3 md:grid-cols-2">
-                    <Field label="Revenu mensuel moyen" />
-                    <Field label="Dépenses mensuelles moyennes" />
-                    <Field label="Propriétaire/Locataire" />
-                    <Field label="Nbre de personnes à charge" />
+                    <Field label="Chiffre d’affaires annuel" />
+                    <Field label="Nombre d’employés" />
+                    <Field label="Forme de propriété" />
+                    <Field label="Agence de rattachement" />
                   </div>
                   <div>
                     <button className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
@@ -264,13 +265,13 @@ export default function PersonnePhysiqueDetail() {
 
               <div className="rounded-md border border-slate-200 bg-white">
                 <button className="w-full px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  Tuteur
+                  Actionnaires
                 </button>
               </div>
 
               <div className="rounded-md border border-slate-200 bg-white">
                 <button className="w-full px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  Employeur
+                  Dirigeants
                 </button>
               </div>
 
@@ -300,7 +301,7 @@ export default function PersonnePhysiqueDetail() {
                 type="button"
                 className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a4587]"
               >
-                Valider cette personne physique
+                Valider cette personne morale
               </button>
             ) : (
               <button
@@ -318,7 +319,7 @@ export default function PersonnePhysiqueDetail() {
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 px-4 py-10">
             <div className="w-full max-w-4xl rounded-lg bg-white shadow-2xl">
               <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-800">Informations de pièce d’identité</h3>
+                <h3 className="text-sm font-semibold text-slate-800">Informations de document légal</h3>
                 <button
                   type="button"
                   onClick={() => setShowPieceModal(false)}
@@ -329,12 +330,12 @@ export default function PersonnePhysiqueDetail() {
               </div>
               <div className="p-4 space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="Type de pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Numéro de pièce" required />
-                  <Field label="Pays émission pièce" required />
-                  <Field label="Lieu émission pièce" required />
-                  <Field label="Date émission pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Date fin validité pièce" required error="Ce champ est obligatoire" />
+                  <Field label="Type de document" required error="Ce champ est obligatoire" />
+                  <Field label="Numéro de document" required />
+                  <Field label="Pays d’émission" required />
+                  <Field label="Lieu d’émission" required />
+                  <Field label="Date d’émission" required error="Ce champ est obligatoire" />
+                  <Field label="Date de validité" required error="Ce champ est obligatoire" />
                 </div>
               </div>
               <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">

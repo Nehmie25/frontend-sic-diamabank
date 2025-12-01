@@ -6,16 +6,11 @@ import { useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
 
-const stepLabels = ["Informations générales", "Pièces d’identités", "Comptes associés", "Infos complémentaires"]
+const stepLabels = ["Informations compte", "Titulaire", "Historique", "Infos complémentaires"]
 
-const piecesIdentite = [
-  { numero: "123456789", pays: "GN", lieu: "Conakry", dateEmission: "2023-01-01", dateValidite: "2028-01-01" },
-  { numero: "0123456789", pays: "XX", lieu: "N/A", dateEmission: "2022-01-01", dateValidite: "2025-01-01" },
-]
-
-const comptesAssocies = [
-  { numero: "123456789", agence: "AG-001", type: "Compte courant", cleRib: "21", statut: "Actif" },
-  { numero: "0123456789", agence: "AG-002", type: "Épargne", cleRib: "10", statut: "Inactif" },
+const mouvements = [
+  { reference: "MVT-001", date: "2024-02-01", libelle: "Prélèvement", montant: "-1 200 000", agence: "AG-001" },
+  { reference: "MVT-002", date: "2024-02-10", libelle: "Intérêts débiteur", montant: "-120 000", agence: "AG-001" },
 ]
 
 const SectionCard = ({ title, children, error }: { title: string; children: React.ReactNode; error?: string }) => (
@@ -64,7 +59,7 @@ const Field = ({
   )
 }
 
-export default function PersonnePhysiqueDetail() {
+export default function CompteDebiteurDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
@@ -99,8 +94,8 @@ export default function PersonnePhysiqueDetail() {
 
         <div className="flex-1 overflow-y-auto px-4 pb-10 pt-4 sm:px-6 space-y-4">
           <div className="flex flex-col gap-2">
-            <div className="text-xs uppercase tracking-wide text-slate-500">Formulaire d’édition de personne physique</div>
-            <div className="text-sm font-semibold text-slate-800">Personne physique</div>
+            <div className="text-xs uppercase tracking-wide text-slate-500">Formulaire d’édition de compte débiteur</div>
+            <div className="text-sm font-semibold text-slate-800">Compte débiteur</div>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm">
@@ -109,46 +104,31 @@ export default function PersonnePhysiqueDetail() {
 
           {currentStep === 0 ? (
             <>
-              <SectionCard title="Références" error="Champs obligatoires manquants">
+              <SectionCard title="Références du compte" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Nature du client" required error="Ce champ peut prendre les valeurs 0 ou 1" />
-                  <Field label="Numéro d’identification national" value="12345678" success />
-                  <Field label="Numéro client chez le participant" value="12345678901" />
-                  <Field label="Date de création" value="2023-12-10" success />
+                  <Field label="Numéro de compte" value="GN-001-000123" required success />
+                  <Field label="Agence" value="AG-001" required />
+                  <Field label="Devise" value="GNF" required />
+                  <Field label="Date d’ouverture" value="2022-04-15" required />
+                  <Field label="Type de compte" value="Compte courant" />
+                  <Field label="Statut" value="Ouvert" success />
                 </div>
               </SectionCard>
 
-              <SectionCard title="Identité" error="Champs obligatoires manquants">
-                <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Nom de naissance du client" value="SYLLA" required error="Champ obligatoire manquant" />
-                  <Field label="Prénom du client" value="Mamadou" required />
-                  <Field label="Date de naissance" value="2000-01-01" required success />
-                  <Field label="Nom marital du client" />
-                  <Field label="Sexe du client" value="M" required />
-                  <Field label="Nom du client" value="(M)-Masculin" />
-                  <Field label="Prénoms du client" value="(Z)-Marié(e)" />
-                  <Field label="Pays de résidence" value="Abidjan" />
-                  <Field label="Nationalité du client" value="GN" />
+              <SectionCard title="Paramètres débiteurs" error="Champs obligatoires manquants">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Field label="Plafond de découvert" value="10 000 000" required />
+                  <Field label="Taux intérêt débiteur" value="12%" required />
+                  <Field label="Montant des frais" value="150 000" />
+                  <Field label="Date de dernière mise à jour" value="2024-02-10" success />
+                  <Field label="Référence contrat" value="CONTR-2024-001" />
                 </div>
-              </SectionCard>
-
-              <SectionCard title="Adresse" error="Champs obligatoires manquants">
-                <div className="grid gap-3 md:grid-cols-5">
-                  <Field label="N° de téléphone" value="0022468920014" required error="10/12/14 suivi de 9 chiffres ou +224 suivi de 9 chiffres" />
-                  <Field label="Email" required error="Champ obligatoire manquant" />
-                  <Field label="Sous tutelle/curelle" />
-                  <Field label="Pays de résidence" value="GN" />
-                  <Field label="Commune de l’adresse" value="Conakry, Plateau" />
-                  <Field label="Adresse" value="Conakry, Plateau" />
-                  <Field label="Code postal" required error="Champ obligatoire manquant" />
-                </div>
-                {/* <div className="mt-3 rounded-md bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">Liste des erreurs</div> */}
               </SectionCard>
             </>
           ) : currentStep === 1 ? (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-4 py-3">
-                <h2 className="text-base font-semibold text-slate-800">Liste des pièces d’identité</h2>
+                <h2 className="text-base font-semibold text-slate-800">Titulaire / signataires</h2>
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <input
@@ -163,7 +143,7 @@ export default function PersonnePhysiqueDetail() {
                     onClick={() => setShowPieceModal(true)}
                     className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
                   >
-                    Ajouter une pièce
+                    Ajouter un signataire
                   </button>
                 </div>
               </div>
@@ -171,21 +151,24 @@ export default function PersonnePhysiqueDetail() {
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                     <tr>
-                      <th className="px-3 py-2 text-left">Numéro de pièce</th>
-                      <th className="px-3 py-2 text-left">Pays d’émission</th>
-                      <th className="px-3 py-2 text-left">Lieu d’émission</th>
-                      <th className="px-3 py-2 text-left">Date d’émission</th>
-                      <th className="px-3 py-2 text-left">Date de validité</th>
+                      <th className="px-3 py-2 text-left">Nom</th>
+                      <th className="px-3 py-2 text-left">Type</th>
+                      <th className="px-3 py-2 text-left">Identifiant client</th>
+                      <th className="px-3 py-2 text-left">Téléphone</th>
+                      <th className="px-3 py-2 text-left">Email</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {piecesIdentite.map((piece, idx) => (
-                      <tr key={piece.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
-                        <td className="px-3 py-2">{piece.numero}</td>
-                        <td className="px-3 py-2">{piece.pays}</td>
-                        <td className="px-3 py-2">{piece.lieu}</td>
-                        <td className="px-3 py-2">{piece.dateEmission}</td>
-                        <td className="px-3 py-2">{piece.dateValidite}</td>
+                    {[
+                      { nom: "Mamadou Bah", type: "Titulaire", identifiant: "CLI-001", tel: "+224620000001", email: "mamadou.bah@banque.gn" },
+                      { nom: "Aïssatou Diallo", type: "Co-signataire", identifiant: "CLI-045", tel: "+224622123456", email: "aissatou.diallo@banque.gn" },
+                    ].map((signataire, idx) => (
+                      <tr key={signataire.identifiant} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+                        <td className="px-3 py-2">{signataire.nom}</td>
+                        <td className="px-3 py-2">{signataire.type}</td>
+                        <td className="px-3 py-2">{signataire.identifiant}</td>
+                        <td className="px-3 py-2">{signataire.tel}</td>
+                        <td className="px-3 py-2">{signataire.email}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -195,7 +178,7 @@ export default function PersonnePhysiqueDetail() {
           ) : currentStep === 2 ? (
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-4 py-3">
-                <h2 className="text-base font-semibold text-slate-800">Liste des comptes associés</h2>
+                <h2 className="text-base font-semibold text-slate-800">Historique des mouvements</h2>
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <input
@@ -210,7 +193,7 @@ export default function PersonnePhysiqueDetail() {
                     onClick={() => setShowCompteModal(true)}
                     className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
                   >
-                    Ajouter un compte
+                    Ajouter un mouvement
                   </button>
                 </div>
               </div>
@@ -218,23 +201,21 @@ export default function PersonnePhysiqueDetail() {
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                     <tr>
-                      <th className="px-3 py-2 text-left">N°</th>
-                      <th className="px-3 py-2 text-left">Agence du compte</th>
-                      <th className="px-3 py-2 text-left">Type compte</th>
-                      <th className="px-3 py-2 text-left">Numéro de compte</th>
-                      <th className="px-3 py-2 text-left">Clé RIB</th>
-                      <th className="px-3 py-2 text-left">Statut</th>
+                      <th className="px-3 py-2 text-left">Référence</th>
+                      <th className="px-3 py-2 text-left">Date</th>
+                      <th className="px-3 py-2 text-left">Libellé</th>
+                      <th className="px-3 py-2 text-left">Montant</th>
+                      <th className="px-3 py-2 text-left">Agence</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {comptesAssocies.map((compte, idx) => (
-                      <tr key={compte.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
-                        <td className="px-3 py-2">{idx + 1}</td>
-                        <td className="px-3 py-2">{compte.agence}</td>
-                        <td className="px-3 py-2">{compte.type}</td>
-                        <td className="px-3 py-2">{compte.numero}</td>
-                        <td className="px-3 py-2">{compte.cleRib}</td>
-                        <td className="px-3 py-2">{compte.statut}</td>
+                    {mouvements.map((mvt, idx) => (
+                      <tr key={mvt.reference} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+                        <td className="px-3 py-2">{mvt.reference}</td>
+                        <td className="px-3 py-2">{mvt.date}</td>
+                        <td className="px-3 py-2">{mvt.libelle}</td>
+                        <td className="px-3 py-2 text-red-600">{mvt.montant}</td>
+                        <td className="px-3 py-2">{mvt.agence}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -249,10 +230,10 @@ export default function PersonnePhysiqueDetail() {
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="grid gap-3 md:grid-cols-2">
-                    <Field label="Revenu mensuel moyen" />
-                    <Field label="Dépenses mensuelles moyennes" />
-                    <Field label="Propriétaire/Locataire" />
-                    <Field label="Nbre de personnes à charge" />
+                    <Field label="Plan de régularisation" />
+                    <Field label="Date de prochaine échéance" />
+                    <Field label="Montant à recouvrer" />
+                    <Field label="Responsable recouvrement" />
                   </div>
                   <div>
                     <button className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
@@ -300,7 +281,7 @@ export default function PersonnePhysiqueDetail() {
                 type="button"
                 className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a4587]"
               >
-                Valider cette personne physique
+                Valider ce compte débiteur
               </button>
             ) : (
               <button
@@ -318,7 +299,7 @@ export default function PersonnePhysiqueDetail() {
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 px-4 py-10">
             <div className="w-full max-w-4xl rounded-lg bg-white shadow-2xl">
               <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-800">Informations de pièce d’identité</h3>
+                <h3 className="text-sm font-semibold text-slate-800">Informations de signataire</h3>
                 <button
                   type="button"
                   onClick={() => setShowPieceModal(false)}
@@ -329,12 +310,12 @@ export default function PersonnePhysiqueDetail() {
               </div>
               <div className="p-4 space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="Type de pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Numéro de pièce" required />
-                  <Field label="Pays émission pièce" required />
-                  <Field label="Lieu émission pièce" required />
-                  <Field label="Date émission pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Date fin validité pièce" required error="Ce champ est obligatoire" />
+                  <Field label="Type de signataire" required error="Ce champ est obligatoire" />
+                  <Field label="Nom complet" required />
+                  <Field label="Identifiant client" required />
+                  <Field label="Téléphone" required />
+                  <Field label="Email" />
+                  <Field label="Pièce d’identité" />
                 </div>
               </div>
               <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">
@@ -360,7 +341,7 @@ export default function PersonnePhysiqueDetail() {
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 px-4 py-10">
             <div className="w-full max-w-3xl rounded-lg bg-white shadow-2xl">
               <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-800">Informations de compte associé</h3>
+                <h3 className="text-sm font-semibold text-slate-800">Ajouter un mouvement</h3>
                 <button
                   type="button"
                   onClick={() => setShowCompteModal(false)}
@@ -371,11 +352,11 @@ export default function PersonnePhysiqueDetail() {
               </div>
               <div className="p-4 space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="Agence du compte" required error="Sélectionnez une valeur" />
-                  <Field label="Type de compte" required />
-                  <Field label="N° de compte" required />
-                  <Field label="Clé RIB" required />
-                  <Field label="Statut du compte" required />
+                  <Field label="Référence" required error="Sélectionnez une valeur" />
+                  <Field label="Date" required />
+                  <Field label="Libellé" required />
+                  <Field label="Montant" required />
+                  <Field label="Agence" required />
                 </div>
               </div>
               <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">

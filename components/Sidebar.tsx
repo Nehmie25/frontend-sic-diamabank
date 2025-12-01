@@ -53,9 +53,9 @@ const sections: Section[] = [
         chevron: true,
         subLinks: [
           { label: "Personnes physiques", href: "/traitement-des-donnees/donnees-a-corriger/personnes-physiques" },
-          { label: "Personnes morales" },
-          { label: "Comptes débiteurs" },
-          { label: "Engagements" },
+          { label: "Personnes morales", href: "/traitement-des-donnees/donnees-a-corriger/personnes-morales" },
+          { label: "Comptes débiteurs", href: "/traitement-des-donnees/donnees-a-corriger/comptes-debiteurs" },
+          { label: "Engagements", href: "/traitement-des-donnees/donnees-a-corriger/engagements" },
           { label: "Encours d'engagements" },
         ],
       },
