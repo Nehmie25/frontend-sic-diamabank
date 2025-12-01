@@ -7,33 +7,32 @@ import { useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
 
-type PersonnePhysique = {
+type PersonneMorale = {
   id: number
   natureClient: number
   identifiant: string
-  nom: string
-  prenom: string
-  sexe: string
-  dateNaissance: string
-  lieuNaissance: string
-  paysNaissance: string
+  raisonSociale: string
+  sigle: string
+  formeJuridique: string
+  dateCreation: string
+  pays: string
   adresse: string
 }
 
-const personnes: PersonnePhysique[] = [
-  { id: 1, natureClient: 0, identifiant: "092382", nom: "QUO", prenom: "", sexe: "M", dateNaissance: "01/01/1962", lieuNaissance: "KOULE/N ZEREKORE", paysNaissance: "GN", adresse: "HOROYA" },
-  { id: 2, natureClient: 0, identifiant: "092381", nom: "MICHEL", prenom: "", sexe: "M", dateNaissance: "01/01/1982", lieuNaissance: "N'ZEREKORE", paysNaissance: "GN", adresse: "TILEPOULOU" },
-  { id: 3, natureClient: 0, identifiant: "092380", nom: "JEAN WILLIAMS", prenom: "", sexe: "M", dateNaissance: "05/01/1986", lieuNaissance: "N'ZEREKORE", paysNaissance: "GN", adresse: "BOMA" },
-  { id: 4, natureClient: 0, identifiant: "092378", nom: "LABILE", prenom: "", sexe: "M", dateNaissance: "28/01/1993", lieuNaissance: "YOMOU", paysNaissance: "GN", adresse: "KONIA" },
-  { id: 5, natureClient: 0, identifiant: "092377", nom: "LANCINE", prenom: "", sexe: "M", dateNaissance: "05/01/1995", lieuNaissance: "KISSIDOUGOU", paysNaissance: "GN", adresse: "BEYLA" },
-  { id: 6, natureClient: 0, identifiant: "092376", nom: "MAMADOU ADAMA", prenom: "", sexe: "M", dateNaissance: "05/01/1990", lieuNaissance: "CONAKRY", paysNaissance: "GN", adresse: "BEYLA" },
-  { id: 7, natureClient: 0, identifiant: "092375", nom: "FARAH M'BEMBA", prenom: "", sexe: "M", dateNaissance: "10/01/1998", lieuNaissance: "GUECKEDOU", paysNaissance: "GN", adresse: "BEYLA" },
-  { id: 8, natureClient: 0, identifiant: "092355", nom: "MAMADOU SANOUSSY", prenom: "", sexe: "M", dateNaissance: "20/01/1998", lieuNaissance: "FRIA", paysNaissance: "GN", adresse: "KISSIBOU" },
-  { id: 9, natureClient: 0, identifiant: "092353", nom: "ALY", prenom: "", sexe: "M", dateNaissance: "01/01/1992", lieuNaissance: "CONAKRY", paysNaissance: "GN", adresse: "MORIBADOU/NIONSOMORIDOU" },
-  { id: 10, natureClient: 0, identifiant: "092351", nom: "YAYA", prenom: "", sexe: "M", dateNaissance: "13/01/1986", lieuNaissance: "KEROUGANE", paysNaissance: "GN", adresse: "MORIBADOU/NIONSOMORIDOU" },
+const personnes: PersonneMorale[] = [
+  { id: 1, natureClient: 1, identifiant: "RCM-2024-001", raisonSociale: "Société Minière Kankou", sigle: "SMK", formeJuridique: "SA", dateCreation: "12/03/2010", pays: "GN", adresse: "Conakry, Kaloum" },
+  { id: 2, natureClient: 1, identifiant: "RCM-2024-002", raisonSociale: "BTP Horizon Guinée", sigle: "BTP-HG", formeJuridique: "SARL", dateCreation: "08/07/2015", pays: "GN", adresse: "Conakry, Dixinn" },
+  { id: 3, natureClient: 1, identifiant: "RCM-2024-003", raisonSociale: "Agro-Export Mandiana", sigle: "AEM", formeJuridique: "SA", dateCreation: "23/02/2012", pays: "GN", adresse: "Kankan, Mandiana" },
+  { id: 4, natureClient: 1, identifiant: "RCM-2024-004", raisonSociale: "Immo Futur", sigle: "IMF", formeJuridique: "SARL", dateCreation: "14/11/2018", pays: "GN", adresse: "Conakry, Ratoma" },
+  { id: 5, natureClient: 1, identifiant: "RCM-2024-005", raisonSociale: "Techlab Guinée", sigle: "TLG", formeJuridique: "SAS", dateCreation: "19/05/2020", pays: "GN", adresse: "Conakry, Lambanyi" },
+  { id: 6, natureClient: 1, identifiant: "RCM-2024-006", raisonSociale: "Commerce Atlantique", sigle: "COATL", formeJuridique: "SA", dateCreation: "30/09/2013", pays: "GN", adresse: "Kindia, Centre" },
+  { id: 7, natureClient: 1, identifiant: "RCM-2024-007", raisonSociale: "Translog Express", sigle: "TLE", formeJuridique: "SARL", dateCreation: "05/01/2017", pays: "GN", adresse: "Boké, Kamsar" },
+  { id: 8, natureClient: 1, identifiant: "RCM-2024-008", raisonSociale: "Énergie Verte Guinée", sigle: "EVG", formeJuridique: "SAS", dateCreation: "17/06/2016", pays: "GN", adresse: "Labé, Centre" },
+  { id: 9, natureClient: 1, identifiant: "RCM-2024-009", raisonSociale: "Clinique Saint Michel", sigle: "CSM", formeJuridique: "SARL", dateCreation: "28/04/2011", pays: "GN", adresse: "Conakry, Matoto" },
+  { id: 10, natureClient: 1, identifiant: "RCM-2024-010", raisonSociale: "Holding Koumba", sigle: "HK", formeJuridique: "SA", dateCreation: "09/09/2014", pays: "GN", adresse: "Conakry, Kipé" },
 ]
 
-export default function PersonnesPhysiquesPage() {
+export default function PersonnesMoralesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
@@ -57,7 +56,7 @@ export default function PersonnesPhysiquesPage() {
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques à corriger</h1>
+              <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes morales à corriger</h1>
             </div>
             <div className="relative w-full max-w-xs">
               <input
@@ -76,13 +75,12 @@ export default function PersonnesPhysiquesPage() {
                   <th className="w-12 px-3 py-2"></th>
                   <th className="w-12 px-3 py-2">N°</th>
                   <th className="w-28 px-3 py-2">Nature client</th>
-                  <th className="w-28 px-3 py-2">Identifiant</th>
-                  <th className="px-3 py-2">Nom</th>
-                  <th className="px-3 py-2">Prénom</th>
-                  <th className="w-20 px-3 py-2">Sexe</th>
-                  <th className="w-32 px-3 py-2">Date de naissance</th>
-                  <th className="px-3 py-2">Lieu de naissance</th>
-                  <th className="px-3 py-2">Pays de naissance</th>
+                  <th className="w-32 px-3 py-2">Identifiant</th>
+                  <th className="px-3 py-2">Raison sociale</th>
+                  <th className="px-3 py-2">Sigle</th>
+                  <th className="w-28 px-3 py-2">Forme juridique</th>
+                  <th className="w-32 px-3 py-2">Date de création</th>
+                  <th className="px-3 py-2">Pays</th>
                   <th className="px-3 py-2">Adresse</th>
                 </tr>
               </thead>
@@ -95,7 +93,7 @@ export default function PersonnesPhysiquesPage() {
                     <td className="px-3 py-2 text-center text-slate-500">
                       <button
                         type="button"
-                        onClick={() => router.push(`/personnes-physiques/${personne.id}`)}
+                        onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-morales/${personne.id}`)}
                         className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
                       >
                         <MdOutlineZoomIn size={18} />
@@ -106,12 +104,11 @@ export default function PersonnesPhysiquesPage() {
                     </td>
                     <td className="px-3 py-2">{personne.natureClient}</td>
                     <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
-                    <td className="px-3 py-2">{personne.nom}</td>
-                    <td className="px-3 py-2">{personne.prenom}</td>
-                    <td className="px-3 py-2">{personne.sexe}</td>
-                    <td className="px-3 py-2">{personne.dateNaissance}</td>
-                    <td className="px-3 py-2">{personne.lieuNaissance}</td>
-                    <td className="px-3 py-2">{personne.paysNaissance}</td>
+                    <td className="px-3 py-2">{personne.raisonSociale}</td>
+                    <td className="px-3 py-2">{personne.sigle}</td>
+                    <td className="px-3 py-2">{personne.formeJuridique}</td>
+                    <td className="px-3 py-2">{personne.dateCreation}</td>
+                    <td className="px-3 py-2">{personne.pays}</td>
                     <td className="px-3 py-2">{personne.adresse}</td>
                   </tr>
                 ))}
