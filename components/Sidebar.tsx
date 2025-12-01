@@ -146,7 +146,7 @@ const sections: Section[] = [
         subLinks: [
           { label: "Participants" },
           { label: "Catégories d’IMFs" },
-          { label: "Pays & Nationalités" },
+          { label: "Pays & Nationalités", href: "/administration/referentiels/pays"},
           { label: "Secteurs d’activités" },
           { label: "Secteurs institutionnels" },
           { label: "Agences" },
