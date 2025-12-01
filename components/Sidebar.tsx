@@ -134,29 +134,20 @@ const sections: Section[] = [
 ]
 
 const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
-  const [openItem, setOpenItem] = useState<string | null>(null)
-  const [activeSub, setActiveSub] = useState<string>("")
   const pathname = usePathname()
-  const router = useRouter()
-  const closeIfMobile = () => {
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
-      onClose?.()
-    }
-  }
-
-  const matchesPath = (target?: string) => {
+  const matchesPath = (path: string, target?: string) => {
     if (!target) return false
-    return pathname === target || pathname.startsWith(`${target}/`)
+    return path === target || path.startsWith(`${target}/`)
   }
 
-  useEffect(() => {
+  const findMatch = (path: string) => {
     let matchedParent: string | null = null
     let matchedSub: string | null = null
 
     sections.forEach((section) => {
       section.links.forEach((link) => {
         if (!link.subLinks) return
-        const sub = link.subLinks.find((item) => matchesPath(item.href))
+        const sub = link.subLinks.find((item) => matchesPath(path, item.href))
         if (sub) {
           matchedParent = link.label
           matchedSub = sub.label
@@ -164,8 +155,24 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
       })
     })
 
-    if (matchedParent) setOpenItem(matchedParent)
-    if (matchedSub) setActiveSub(matchedSub)
+    return { matchedParent, matchedSub }
+  }
+
+  const { matchedParent, matchedSub } = findMatch(pathname)
+
+  const [openItem, setOpenItem] = useState<string | null>(matchedParent)
+  const [activeSub, setActiveSub] = useState<string>(matchedSub ?? "")
+  const router = useRouter()
+  const closeIfMobile = () => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
+      onClose?.()
+    }
+  }
+
+  useEffect(() => {
+    const { matchedParent: parent, matchedSub: sub } = findMatch(pathname)
+    if (parent) setOpenItem(parent)
+    if (sub) setActiveSub(sub)
   }, [pathname])
 
   return (
@@ -200,8 +207,8 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
             <ul className="space-y-1 text-sm text-slate-700">
               {section.links.map((link) => {
                 const isOpen = openItem === link.label && link.subLinks
-                const hasActiveChild = link.subLinks?.some((sub) => matchesPath(sub.href))
-                const isActiveLink = matchesPath(link.href) || hasActiveChild
+                const hasActiveChild = link.subLinks?.some((sub) => matchesPath(pathname, sub.href))
+                const isActiveLink = matchesPath(pathname, link.href) || hasActiveChild
                 return (
                   <li key={link.label} className="space-y-1">
                     {link.subLinks ? (
@@ -244,7 +251,7 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                     {isOpen ? (
                       <div className="ml-6 mt-1 border-l-4 border-blue-700 pl-3 space-y-1">
                         {link.subLinks.map((sub) => {
-                          const isActive = matchesPath(sub.href) || activeSub === sub.label
+                          const isActive = matchesPath(pathname, sub.href) || activeSub === sub.label
                           return (
                             <button
                               type="button"
