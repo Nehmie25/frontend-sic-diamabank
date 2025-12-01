@@ -76,14 +76,16 @@ export default function ConnexionPage() {
         </form>
       </div>
 
-      <div className="relative block bg-slate-200">
+      <div className="relative w-full h-screen">
         <Image
-          src="/login-hero.jpg"
-          alt="connexion image"
+          src="/image_login.jpg"
+          alt="Image full page"
           fill
-          className="object-contain"
+          className="object-cover"
+          priority
         />
       </div>
+
     </div>
   )
 }
