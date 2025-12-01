@@ -88,7 +88,7 @@ const sections: Section[] = [
           {label: "Encours d'engagements" },
         ]
       },
-      { 
+      {
         icon: AiFillDatabase,
         label: "Données à générer",
         chevron: true,
@@ -100,7 +100,7 @@ const sections: Section[] = [
           {label: "Encours d'engagements" },
         ]
        },
-      
+
       { icon: LuDatabase, label: "Suivi des générations", chevron: true },
     ],
   },
@@ -136,7 +136,7 @@ const sections: Section[] = [
         chevron: true,
         subLinks: [
           { label: "Compte utilisateurs" , href: "/administration/utilisateur/compte-utilisateur"},
-          { label: "Utilisateurs bloqués" },
+          { label: "Utilisateurs bloqués", href: "/administration/utilisateur/utilisateur-bloque" },
         ]
       },
       {
