@@ -1,8 +1,8 @@
 'use client'
 import Image from "next/image"
+import { usePathname, useRouter } from "next/navigation"
 import type { ComponentType } from "react"
 import { useEffect, useState } from "react"
-import { usePathname, useRouter } from "next/navigation"
 import { AiFillDatabase, AiOutlineStop } from "react-icons/ai"
 import { BsPen } from "react-icons/bs"
 import { CiCreditCard1 } from "react-icons/ci"
@@ -69,23 +69,24 @@ const sections: Section[] = [
         label: "Validation des déclarations",
         chevron: true,
         subLinks: [
-          {label: "Personnes physiques", href: "/declaration/validation-des-declarations/personnes-physiques" },
-          {label: "Personnes morales", href: "/declaration/validation-des-declarations/personnes-morales" },
-          {label: "Comptes débiteurs", href: "/declaration/validation-des-declarations/comptes-debiteurs" },
-          {label: "Engagements", href: "/declaration/validation-des-declarations/engagements" },
-          {label: "Encours d'engagements" },
+          { label: "Personnes physiques", href: "/declaration/validation-des-declarations/personnes-physiques" },
+          { label: "Personnes morales", href: "/declaration/validation-des-declarations/personnes-morales" },
+          { label: "Comptes débiteurs", href: "/declaration/validation-des-declarations/comptes-debiteurs" },
+          { label: "Engagements", href: "/declaration/validation-des-declarations/engagements" },
+          { label: "Encours d'engagements" },
         ]
       },
 
-      { icon: SlDisc,
+      {
+        icon: SlDisc,
         label: "Supervalidation des déclarations",
         chevron: true,
         subLinks: [
-          {label: "Personnes physiques", href: "/declaration/supervalidation-des-declarations/personnes-physiques" },
-          {label: "Personnes morales", href: "/declaration/supervalidation-des-declarations/personnes-morales" },
-          {label: "Comptes débiteurs", href: "/declaration/supervalidation-des-declarations/comptes-debiteurs" },
-          {label: "Engagements", href: "/declaration/supervalidation-des-declarations/engagements" },
-          {label: "Encours d'engagements" },
+          { label: "Personnes physiques", href: "/declaration/supervalidation-des-declarations/personnes-physiques" },
+          { label: "Personnes morales", href: "/declaration/supervalidation-des-declarations/personnes-morales" },
+          { label: "Comptes débiteurs", href: "/declaration/supervalidation-des-declarations/comptes-debiteurs" },
+          { label: "Engagements", href: "/declaration/supervalidation-des-declarations/engagements" },
+          { label: "Encours d'engagements" },
         ]
       },
       {
@@ -93,13 +94,13 @@ const sections: Section[] = [
         label: "Données à générer",
         chevron: true,
         subLinks: [
-          {label: "Personnes physiques", href: "/declaration/donnees-a-generer/personnes-physiques" },
-          {label: "Personnes morales", href: "/declaration/donnees-a-generer/personnes-morales" },
-          {label: "Comptes débiteurs", href: "/declaration/donnees-a-generer/comptes-debiteurs" },
-          {label: "Engagements", href: "/declaration/donnees-a-generer/engagements" },
-          {label: "Encours d'engagements" },
+          { label: "Personnes physiques", href: "/declaration/donnees-a-generer/personnes-physiques" },
+          { label: "Personnes morales", href: "/declaration/donnees-a-generer/personnes-morales" },
+          { label: "Comptes débiteurs", href: "/declaration/donnees-a-generer/comptes-debiteurs" },
+          { label: "Engagements", href: "/declaration/donnees-a-generer/engagements" },
+          { label: "Encours d'engagements" },
         ]
-       },
+      },
 
       { icon: LuDatabase, label: "Suivi des générations", chevron: true },
     ],
@@ -114,7 +115,7 @@ const sections: Section[] = [
         subLinks: [
           { label: "Envoyées vers la centrale" },
           { label: "Acceptées par la centrale" },
-          { label: "Rejetées par la centrale" },
+          { label: "Rejetées par la centrale", href: "/suivi-des-declarations/personnes-physiques/rejetee-par-centrale" },
         ],
       },
       { icon: IoHomeOutline, label: "Personnes morales", chevron: true },
@@ -135,7 +136,7 @@ const sections: Section[] = [
         label: "Gestion des utilisateurs",
         chevron: true,
         subLinks: [
-          { label: "Compte utilisateurs" , href: "/administration/utilisateur/compte-utilisateur"},
+          { label: "Compte utilisateurs", href: "/administration/utilisateur/compte-utilisateur" },
           { label: "Utilisateurs bloqués", href: "/administration/utilisateur/utilisateur-bloque" },
         ]
       },
@@ -146,7 +147,7 @@ const sections: Section[] = [
         subLinks: [
           { label: "Participants" },
           { label: "Catégories d’IMFs" },
-          { label: "Pays & Nationalités", href: "/administration/referentiels/pays"},
+          { label: "Pays & Nationalités", href: "/administration/referentiels/pays" },
           { label: "Secteurs d’activités" },
           { label: "Secteurs institutionnels" },
           { label: "Agences" },
@@ -211,9 +212,8 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-20 flex h-full w-72 flex-col border-r border-slate-200 bg-white/98 shadow-[4px_0_18px_-14px_rgba(0,0,0,0.4)] backdrop-blur transition-transform duration-200 ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } md:translate-x-0`}
+      className={`fixed inset-y-0 left-0 z-20 flex h-full w-72 flex-col border-r border-slate-200 bg-white/98 shadow-[4px_0_18px_-14px_rgba(0,0,0,0.4)] backdrop-blur transition-transform duration-200 ${isOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}
     >
       <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-white to-slate-50">
         <div className="flex items-center justify-center h-12 w-12 rounded-xl border border-blue-100 bg-blue-50 shadow-sm">
@@ -249,11 +249,10 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                       <button
                         type="button"
                         onClick={() => setOpenItem(isOpen ? null : link.label)}
-                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                          isActiveLink
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${isActiveLink
                             ? "bg-[#ECF3FF] text-[#1E4F9B] font-semibold"
                             : "hover:bg-blue-50 hover:text-blue-700"
-                        }`}
+                          }`}
                       >
                         <link.icon className="text-base" />
                         <span className="flex-1 text-[13px] font-medium">{link.label}</span>
@@ -270,11 +269,10 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                             closeIfMobile()
                           }
                         }}
-                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                          isActiveLink
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${isActiveLink
                             ? "bg-[#ECF3FF] text-[#1E4F9B] font-semibold"
                             : "hover:bg-blue-50 hover:text-blue-700"
-                        }`}
+                          }`}
                       >
                         <link.icon className="text-base" />
                         <span className="flex-1 text-[13px] font-medium">{link.label}</span>
