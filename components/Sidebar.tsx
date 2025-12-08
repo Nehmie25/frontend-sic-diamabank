@@ -61,73 +61,73 @@ const sections: Section[] = [
       },
     ],
   },
-  {
-    title: "Déclaration",
-    links: [
-      {
-        icon: SlDisc,
-        label: "Validation des déclarations",
-        chevron: true,
-        subLinks: [
-          { label: "Personnes physiques", href: "/declaration/validation-des-declarations/personnes-physiques" },
-          { label: "Personnes morales", href: "/declaration/validation-des-declarations/personnes-morales" },
-          { label: "Comptes débiteurs", href: "/declaration/validation-des-declarations/comptes-debiteurs" },
-          { label: "Engagements", href: "/declaration/validation-des-declarations/engagements" },
-          { label: "Encours d'engagements" },
-        ]
-      },
+  // {
+  //   title: "Déclaration",
+  //   links: [
+  //     {
+  //       icon: SlDisc,
+  //       label: "Validation des déclarations",
+  //       chevron: true,
+  //       subLinks: [
+  //         { label: "Personnes physiques", href: "/declaration/validation-des-declarations/personnes-physiques" },
+  //         { label: "Personnes morales", href: "/declaration/validation-des-declarations/personnes-morales" },
+  //         { label: "Comptes débiteurs", href: "/declaration/validation-des-declarations/comptes-debiteurs" },
+  //         { label: "Engagements", href: "/declaration/validation-des-declarations/engagements" },
+  //         { label: "Encours d'engagements" },
+  //       ]
+  //     },
 
-      {
-        icon: SlDisc,
-        label: "Supervalidation des déclarations",
-        chevron: true,
-        subLinks: [
-          { label: "Personnes physiques", href: "/declaration/supervalidation-des-declarations/personnes-physiques" },
-          { label: "Personnes morales", href: "/declaration/supervalidation-des-declarations/personnes-morales" },
-          { label: "Comptes débiteurs", href: "/declaration/supervalidation-des-declarations/comptes-debiteurs" },
-          { label: "Engagements", href: "/declaration/supervalidation-des-declarations/engagements" },
-          { label: "Encours d'engagements" },
-        ]
-      },
-      {
-        icon: AiFillDatabase,
-        label: "Données à générer",
-        chevron: true,
-        subLinks: [
-          { label: "Personnes physiques", href: "/declaration/donnees-a-generer/personnes-physiques" },
-          { label: "Personnes morales", href: "/declaration/donnees-a-generer/personnes-morales" },
-          { label: "Comptes débiteurs", href: "/declaration/donnees-a-generer/comptes-debiteurs" },
-          { label: "Engagements", href: "/declaration/donnees-a-generer/engagements" },
-          { label: "Encours d'engagements" },
-        ]
-      },
+  //     {
+  //       icon: SlDisc,
+  //       label: "Supervalidation des déclarations",
+  //       chevron: true,
+  //       subLinks: [
+  //         { label: "Personnes physiques", href: "/declaration/supervalidation-des-declarations/personnes-physiques" },
+  //         { label: "Personnes morales", href: "/declaration/supervalidation-des-declarations/personnes-morales" },
+  //         { label: "Comptes débiteurs", href: "/declaration/supervalidation-des-declarations/comptes-debiteurs" },
+  //         { label: "Engagements", href: "/declaration/supervalidation-des-declarations/engagements" },
+  //         { label: "Encours d'engagements" },
+  //       ]
+  //     },
+  //     {
+  //       icon: AiFillDatabase,
+  //       label: "Données à générer",
+  //       chevron: true,
+  //       subLinks: [
+  //         { label: "Personnes physiques", href: "/declaration/donnees-a-generer/personnes-physiques" },
+  //         { label: "Personnes morales", href: "/declaration/donnees-a-generer/personnes-morales" },
+  //         { label: "Comptes débiteurs", href: "/declaration/donnees-a-generer/comptes-debiteurs" },
+  //         { label: "Engagements", href: "/declaration/donnees-a-generer/engagements" },
+  //         { label: "Encours d'engagements" },
+  //       ]
+  //     },
 
-      { icon: LuDatabase, label: "Suivi des générations", chevron: true },
-    ],
-  },
-  {
-    title: "Suivi des déclarations",
-    links: [
-      {
-        icon: IoPersonCircleOutline,
-        label: "Personnes physiques",
-        chevron: true,
-        subLinks: [
-          { label: "Envoyées vers la centrale" },
-          { label: "Acceptées par la centrale" },
-          { label: "Rejetées par la centrale", href: "/suivi-des-declarations/personnes-physiques/rejetee-par-centrale" },
-        ],
-      },
-      { icon: IoHomeOutline, label: "Personnes morales", chevron: true },
-      { icon: CiCreditCard1, label: "Comptes débiteurs", chevron: true },
-      { icon: BsPen, label: "Engagements", chevron: true },
-      { icon: LiaInfinitySolid, label: "Encours d'engagement", chevron: true },
-    ],
-  },
-  {
-    title: "Reporting",
-    links: [{ icon: FaRegShareFromSquare, label: "Reporting" }],
-  },
+  //     { icon: LuDatabase, label: "Suivi des générations", chevron: true },
+  //   ],
+  // },
+  // {
+  //   title: "Suivi des déclarations",
+  //   links: [
+  //     {
+  //       icon: IoPersonCircleOutline,
+  //       label: "Personnes physiques",
+  //       chevron: true,
+  //       subLinks: [
+  //         { label: "Envoyées vers la centrale" },
+  //         { label: "Acceptées par la centrale" },
+  //         { label: "Rejetées par la centrale", href: "/suivi-des-declarations/personnes-physiques/rejetee-par-centrale" },
+  //       ],
+  //     },
+  //     { icon: IoHomeOutline, label: "Personnes morales", chevron: true },
+  //     { icon: CiCreditCard1, label: "Comptes débiteurs", chevron: true },
+  //     { icon: BsPen, label: "Engagements", chevron: true },
+  //     { icon: LiaInfinitySolid, label: "Encours d'engagement", chevron: true },
+  //   ],
+  // },
+  // {
+  //   title: "Reporting",
+  //   links: [{ icon: FaRegShareFromSquare, label: "Reporting" }],
+  // },
   {
     title: "Administration",
     links: [
@@ -140,30 +140,30 @@ const sections: Section[] = [
           { label: "Utilisateurs bloqués", href: "/administration/utilisateur/utilisateur-bloque" },
         ]
       },
-      {
-        icon: MdOutlineSettings,
-        label: "Gestion des referentiels",
-        chevron: true,
-        subLinks: [
-          { label: "Participants" },
-          { label: "Catégories d’IMFs" },
-          { label: "Pays & Nationalités", href: "/administration/referentiels/pays" },
-          { label: "Secteurs d’activités" },
-          { label: "Secteurs institutionnels" },
-          { label: "Agences" },
-          { label: "Formes juridiques des PM" },
-          { label: "Qualité des mandataires" },
-          { label: "Type, Nature et catégorie engage" },
-          { label: "Périodicité engagement" },
-          { label: "Termes engagement banques" },
-          { label: "Termes engagement IMF" },
-          { label: "Moyens de remboursement" },
-          { label: "FNatures et type garanties" },
-          { label: "Types identifiant garanties" },
-          { label: "Qualité créance banque" },
-          { label: "Qualité créance IMF" }
-        ]
-      }
+      // {
+      //   icon: MdOutlineSettings,
+      //   label: "Gestion des referentiels",
+      //   chevron: true,
+      //   subLinks: [
+      //     { label: "Participants" },
+      //     { label: "Catégories d’IMFs" },
+      //     { label: "Pays & Nationalités", href: "/administration/referentiels/pays" },
+      //     { label: "Secteurs d’activités" },
+      //     { label: "Secteurs institutionnels" },
+      //     { label: "Agences" },
+      //     { label: "Formes juridiques des PM" },
+      //     { label: "Qualité des mandataires" },
+      //     { label: "Type, Nature et catégorie engage" },
+      //     { label: "Périodicité engagement" },
+      //     { label: "Termes engagement banques" },
+      //     { label: "Termes engagement IMF" },
+      //     { label: "Moyens de remboursement" },
+      //     { label: "FNatures et type garanties" },
+      //     { label: "Types identifiant garanties" },
+      //     { label: "Qualité créance banque" },
+      //     { label: "Qualité créance IMF" }
+      //   ]
+      // }
     ],
   },
 ]
