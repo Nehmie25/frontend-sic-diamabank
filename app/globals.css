@@ -9,3 +9,47 @@
 body {
   background-color: #f3f6fb;
 }
+
+/* Customization du DatePicker */
+.react-datepicker__wrapper {
+  width: 100%;
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker__header {
+  background-color: #1e4f9b;
+  border-color: #1e4f9b;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  background-color: #1e4f9b;
+  color: white;
+}
+
+.react-datepicker__day:hover {
+  background-color: #e0e7ff;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #1e4f9b;
+  color: white;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: white;
+}

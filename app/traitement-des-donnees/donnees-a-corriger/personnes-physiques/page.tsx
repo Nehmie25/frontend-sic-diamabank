@@ -6,6 +6,12 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
+import { FiChevronDown } from "react-icons/fi"
+import { HiOutlineDownload } from "react-icons/hi"
+import DatePicker from "react-datepicker"
+import { fr } from "date-fns/locale"
+import { XMLParser } from "fast-xml-parser"
+import "react-datepicker/dist/react-datepicker.css"
 
 type PersonnePhysique = {
   id: number
@@ -37,7 +43,83 @@ export default function PersonnesPhysiquesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
+  const [isCardOpen, setIsCardOpen] = useState(true)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [hasSearched, setHasSearched] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [statistics, setStatistics] = useState({
+    total: 0,
+    enAttente: 0,
+    rejetees: 0,
+    validees: 0,
+  })
   const router = useRouter()
+
+  // Fonction pour appel api en get
+  const fetchDataByDate = async (date: string) => {
+    // Implémentez ici la logique pour appeler votre API avec la date formatée
+    // Par exemple :
+    // const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`);
+    const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=28/09/24`);
+    
+    // Récupérer la réponse en texte (XML)
+    const xmlText = await response.text();
+    // console.log("Réponse XML:", xmlText);
+    
+    // Parser le XML en JSON avec fast-xml-parser
+    const parser = new XMLParser({ ignoreAttributes: false , attributeNamePrefix: ""});
+    const jsonData = parser.parse(xmlText);
+
+    const declarations = jsonData.Declarations?.Declaration;
+
+    console.log("Données JSON modifiées:", jsonData);
+
+    // console.log("Données JSON parsées:", jsonParsed);
+    
+    return jsonData;
+  }
+
+  const handleSearch = async () => {
+    // Vérifier si une date a été sélectionnée
+    if (!selectedDate) {
+      alert("Veuillez sélectionner une date");
+      return;
+    }
+
+    // Formater la date en jj/mm/aa
+    const formattedDate = selectedDate.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit"
+    });
+
+    setIsLoading(true)
+    setHasSearched(false)
+    // Réinitialiser les statistiques à 0 pendant la recherche
+    setStatistics({
+      total: 0,
+      enAttente: 0,
+      rejetees: 0,
+      validees: 0,
+    })
+
+    //faire la requête pour récupérer les données en fonction de la date sélectionnée
+    const data = await fetchDataByDate(formattedDate);
+    // console.log("Données récupérées :", data);
+
+    // Simuler une latence de 2 secondes
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Une fois la recherche terminée, afficher les données
+    setStatistics({
+      total: 342,
+      enAttente: 87,
+      rejetees: 42,
+      validees: 213,
+    })
+    setHasSearched(true)
+    setIsLoading(false)
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
@@ -69,10 +151,111 @@ export default function PersonnesPhysiquesPage() {
             </div>
           </div>
 
+
+          {/* Collapsible Card */}
+          <div className="mb-6 rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <button
+              onClick={() => setIsCardOpen(!isCardOpen)}
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
+            >
+              <h2 className="text-base font-semibold text-slate-800">Filtres et options</h2>
+              <FiChevronDown
+                size={20}
+                className={`text-slate-600 transition-transform duration-300 ${isCardOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isCardOpen && (
+              <div className="border-t border-slate-200 px-6 py-4 bg-slate-50">
+                <div className="flex items-center justify-center">
+                  <div className="w-6/12 flex gap-4 items-center">
+                    <div className="flex-1">
+                      <DatePicker
+                        selected={selectedDate}
+                        onChange={(date) => setSelectedDate(date)}
+                        dateFormat="dd/MM/yyyy"
+                        locale={fr}
+                        placeholderText="Sélectionner une date"
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                      />
+                    </div>
+                    <button 
+                      onClick={handleSearch}
+                      disabled={isLoading}
+                      className={`rounded-md px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors ${
+                        isLoading 
+                          ? "bg-slate-400 cursor-not-allowed" 
+                          : "bg-[#1E4F9B] hover:bg-[#1a4587]"
+                      }`}
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Recherche en cours...
+                        </span>
+                      ) : (
+                        "Rechercher"
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 4 Statistics Cards */}
+                <div className="mt-6 grid grid-cols-4 gap-4">
+                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                    <div className="text-3xl font-bold text-blue-600">{statistics.total}</div>
+                    <div className="mt-2 text-sm text-slate-600">Total déclarations</div>
+                  </div>
+                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                    <div className="text-3xl font-bold text-orange-600">{statistics.enAttente}</div>
+                    <div className="mt-2 text-sm text-slate-600">En attente de correction</div>
+                  </div>
+                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                    <div className="text-3xl font-bold text-red-600">{statistics.rejetees}</div>
+                    <div className="mt-2 text-sm text-slate-600">Rejetées</div>
+                  </div>
+                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                    <div className="text-3xl font-bold text-green-600">{statistics.validees}</div>
+                    <div className="mt-2 text-sm text-slate-600">Validées</div>
+                  </div>
+                </div>
+
+                {/* Export Button */}
+                <div className="mt-6 flex justify-center">
+                  <button 
+                    disabled={!hasSearched}
+                    className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
+                      hasSearched
+                        ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
+                        : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    }`}
+                  >
+                    <HiOutlineDownload size={18} />
+                    Exporter le fichier
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Warning Message */}
+          <div className="mb-6 rounded-md border border-orange-300 bg-orange-50 p-4 text-sm text-orange-800">
+            <div className="flex items-center justify-center gap-3">
+              <svg className="h-5 w-5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <p className="font-semibold">Important : La recherche est nécessaire pour obtenir les données actualisées.</p>
+            </div>
+          </div>
+
           <div className="overflow-auto rounded-md border border-slate-200 shadow-sm bg-white">
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50">
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+                  <th className="w-12 px-3 py-2"></th>
                   <th className="w-12 px-3 py-2"></th>
                   <th className="w-12 px-3 py-2">N°</th>
                   <th className="w-28 px-3 py-2">Nature client</th>
@@ -104,6 +287,7 @@ export default function PersonnesPhysiquesPage() {
                     <td className="px-3 py-2">
                       <input type="checkbox" className="checkbox checkbox-sm" />
                     </td>
+                    <td>1</td>
                     <td className="px-3 py-2">{personne.natureClient}</td>
                     <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
                     <td className="px-3 py-2">{personne.nom}</td>
