@@ -10,7 +10,6 @@ import { FiChevronDown } from "react-icons/fi"
 import { HiOutlineDownload } from "react-icons/hi"
 import DatePicker from "react-datepicker"
 import { fr } from "date-fns/locale"
-import { XMLParser } from "fast-xml-parser"
 import "react-datepicker/dist/react-datepicker.css"
 
 type PersonnePhysique = {
@@ -26,18 +25,7 @@ type PersonnePhysique = {
   adresse: string
 }
 
-const personnes: PersonnePhysique[] = [
-  { id: 1, natureClient: 0, identifiant: "092382", nom: "QUO", prenom: "", sexe: "M", dateNaissance: "01/01/1962", lieuNaissance: "KOULE/N ZEREKORE", paysNaissance: "GN", adresse: "HOROYA" },
-  { id: 2, natureClient: 0, identifiant: "092381", nom: "MICHEL", prenom: "", sexe: "M", dateNaissance: "01/01/1982", lieuNaissance: "N'ZEREKORE", paysNaissance: "GN", adresse: "TILEPOULOU" },
-  { id: 3, natureClient: 0, identifiant: "092380", nom: "JEAN WILLIAMS", prenom: "", sexe: "M", dateNaissance: "05/01/1986", lieuNaissance: "N'ZEREKORE", paysNaissance: "GN", adresse: "BOMA" },
-  { id: 4, natureClient: 0, identifiant: "092378", nom: "LABILE", prenom: "", sexe: "M", dateNaissance: "28/01/1993", lieuNaissance: "YOMOU", paysNaissance: "GN", adresse: "KONIA" },
-  { id: 5, natureClient: 0, identifiant: "092377", nom: "LANCINE", prenom: "", sexe: "M", dateNaissance: "05/01/1995", lieuNaissance: "KISSIDOUGOU", paysNaissance: "GN", adresse: "BEYLA" },
-  { id: 6, natureClient: 0, identifiant: "092376", nom: "MAMADOU ADAMA", prenom: "", sexe: "M", dateNaissance: "05/01/1990", lieuNaissance: "CONAKRY", paysNaissance: "GN", adresse: "BEYLA" },
-  { id: 7, natureClient: 0, identifiant: "092375", nom: "FARAH M'BEMBA", prenom: "", sexe: "M", dateNaissance: "10/01/1998", lieuNaissance: "GUECKEDOU", paysNaissance: "GN", adresse: "BEYLA" },
-  { id: 8, natureClient: 0, identifiant: "092355", nom: "MAMADOU SANOUSSY", prenom: "", sexe: "M", dateNaissance: "20/01/1998", lieuNaissance: "FRIA", paysNaissance: "GN", adresse: "KISSIBOU" },
-  { id: 9, natureClient: 0, identifiant: "092353", nom: "ALY", prenom: "", sexe: "M", dateNaissance: "01/01/1992", lieuNaissance: "CONAKRY", paysNaissance: "GN", adresse: "MORIBADOU/NIONSOMORIDOU" },
-  { id: 10, natureClient: 0, identifiant: "092351", nom: "YAYA", prenom: "", sexe: "M", dateNaissance: "13/01/1986", lieuNaissance: "KEROUGANE", paysNaissance: "GN", adresse: "MORIBADOU/NIONSOMORIDOU" },
-]
+
 
 export default function PersonnesPhysiquesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(
@@ -53,30 +41,33 @@ export default function PersonnesPhysiquesPage() {
     rejetees: 0,
     validees: 0,
   })
+  const [personnes, setPersonnes] = useState<PersonnePhysique[]>([])
   const router = useRouter()
-
+  const [countLines, setCountLines] = useState(0);
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
-    // Implémentez ici la logique pour appeler votre API avec la date formatée
-    // Par exemple :
-    // const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`);
-    const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=28/09/24`);
-    
-    // Récupérer la réponse en texte (XML)
-    const xmlText = await response.text();
-    // console.log("Réponse XML:", xmlText);
-    
-    // Parser le XML en JSON avec fast-xml-parser
-    const parser = new XMLParser({ ignoreAttributes: false , attributeNamePrefix: ""});
-    const jsonData = parser.parse(xmlText);
+    const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
 
-    const declarations = jsonData.Declarations?.Declaration;
+    const data = await response.text()
 
-    console.log("Données JSON modifiées:", jsonData);
-
-    // console.log("Données JSON parsées:", jsonParsed);
-    
-    return jsonData;
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(data, "text/xml");
+    const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
+    const mapped = Array.from(personnesElements).map(el => ({
+      id: parseInt(el.getAttribute("IdInterneClt") || "0"),
+      natureClient: parseInt(el.getAttribute("NatClient") || "0"),
+      identifiant: el.getAttribute("NumSecSoc") || "",
+      nom: el.getAttribute("NomNaiClt") || "",
+      prenom: el.getAttribute("PrenomClt") || "",
+      sexe: el.getAttribute("Sexe") || "",
+      dateNaissance: el.getAttribute("DatNai") || "",
+      lieuNaissance: el.getAttribute("VilleNai") || "",
+      paysNaissance: el.getAttribute("PaysNai") || "",
+      adresse: el.getAttribute("Adress") || "",
+    }));
+    setPersonnes(mapped);
+    setCountLines(mapped.length);
+    return mapped.length;
   }
 
   const handleSearch = async () => {
@@ -104,7 +95,7 @@ export default function PersonnesPhysiquesPage() {
     })
 
     //faire la requête pour récupérer les données en fonction de la date sélectionnée
-    const data = await fetchDataByDate(formattedDate);
+    const count = await fetchDataByDate(formattedDate);
     // console.log("Données récupérées :", data);
 
     // Simuler une latence de 2 secondes
@@ -112,13 +103,32 @@ export default function PersonnesPhysiquesPage() {
     
     // Une fois la recherche terminée, afficher les données
     setStatistics({
-      total: 342,
-      enAttente: 87,
-      rejetees: 42,
-      validees: 213,
+      total: count,
+      enAttente: 0,
+      rejetees: 0,
+      validees: count,
     })
     setHasSearched(true)
     setIsLoading(false)
+  }
+
+  const handleExport = () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <data>
+    <declaration>
+${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
+    </declaration>
+  </data>
+</Response>`;
+
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'personnes.xml';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -226,6 +236,7 @@ export default function PersonnesPhysiquesPage() {
                 {/* Export Button */}
                 <div className="mt-6 flex justify-center">
                   <button 
+                    onClick={handleExport}
                     disabled={!hasSearched}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
                       hasSearched
@@ -303,11 +314,11 @@ export default function PersonnesPhysiquesPage() {
             </table>
           </div>
 
-          <div className="mt-6 flex items-center justify-center">
+          {/* <div className="mt-6 flex items-center justify-center">
             <button className="rounded-md bg-[#1E4F9B] px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm hover:bg-[#1a4587]">
               Créer une déclaration à partir des éléments cochés
             </button>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>
