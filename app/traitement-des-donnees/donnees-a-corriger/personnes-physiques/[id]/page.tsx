@@ -2,9 +2,61 @@
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import StepTimeline from "@/components/StepTimeline"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
+
+
+type PersonnePhysique = {
+  id: number
+  natureClient: number
+  identifiant: string
+  nom: string
+  prenom: string
+  sexe: string
+  dateNaissance: string
+  lieuNaissance: string
+  paysNaissance: string
+  adresse: string
+  // Nouveaux champs
+  natDec?: string
+  idInterneClt?: string
+  datCreaPart?: string
+  nomNaiClt?: string
+  prenomClt?: string
+  etatCivil?: string
+  nomPere?: string
+  prenomPere?: string
+  nomNaiMere?: string
+  prmMre?: string
+  villeNai?: string
+  natClt?: string
+  resident?: string
+  paysRes?: string
+  mobile?: string
+  communeAdress?: string
+  sectInst?: string
+  numSecSoc?: string
+  sTutelle?: string
+  statutClt?: string
+  sitBancaire?: string
+  compteAssocie?: Array<{
+    codAgce: string
+    numCpt: string
+    cleRib: string
+    typCpt: string
+    statCpt: string
+  }>
+  piece?: Array<{
+    typPiece: string
+    numPiece: string
+    datEmiPiece: string
+    lieuEmiPiece: string
+    paysEmiPiece: string
+    finValPiece: string
+  }>
+}
+
 
 const stepLabels = ["Informations générales", "Pièces d’identités", "Comptes associés", "Infos complémentaires"]
 
@@ -65,6 +117,17 @@ const Field = ({
 }
 
 export default function PersonnePhysiqueDetail() {
+
+  const [personne, setPersonne] = useState<PersonnePhysique | null>(null)
+
+  useEffect(() => {
+    const data = sessionStorage.getItem('personneData')
+    if (data) {
+      console.log('Loaded personne data from sessionStorage:', JSON.parse(data))
+      setPersonne(JSON.parse(data))
+    }
+  }, [])
+
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
@@ -120,15 +183,15 @@ export default function PersonnePhysiqueDetail() {
 
               <SectionCard title="Identité" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Nom de naissance du client" value="SYLLA" required error="Champ obligatoire manquant" />
-                  <Field label="Prénom du client" value="Mamadou" required />
-                  <Field label="Date de naissance" value="2000-01-01" required success />
+                  <Field label="Nom de naissance du client" value={personne?.nom || ""} required error="Champ obligatoire manquant" />
+                  <Field label="Prénom du client" value={personne?.prenom || ""} required />
+                  <Field label="Date de naissance" value={personne?.dateNaissance || ""} required success />
                   <Field label="Nom marital du client" />
-                  <Field label="Sexe du client" value="M" required />
+                  <Field label="Sexe du client" value={personne?.sexe || ""} required />
                   <Field label="Nom du client" value="(M)-Masculin" />
                   <Field label="Prénoms du client" value="(Z)-Marié(e)" />
-                  <Field label="Pays de résidence" value="Abidjan" />
-                  <Field label="Nationalité du client" value="GN" />
+                  <Field label="Pays de résidence" value={personne?.paysNaissance || ""} />
+                  <Field label="Nationalité du client" value={personne?.paysNaissance || ""} />
                 </div>
               </SectionCard>
 
@@ -158,13 +221,13 @@ export default function PersonnePhysiqueDetail() {
                     />
                     <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
                   </div>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() => setShowPieceModal(true)}
                     className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
                   >
                     Ajouter une pièce
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <div className="overflow-auto">
@@ -179,13 +242,13 @@ export default function PersonnePhysiqueDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {piecesIdentite.map((piece, idx) => (
-                      <tr key={piece.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
-                        <td className="px-3 py-2">{piece.numero}</td>
-                        <td className="px-3 py-2">{piece.pays}</td>
-                        <td className="px-3 py-2">{piece.lieu}</td>
-                        <td className="px-3 py-2">{piece.dateEmission}</td>
-                        <td className="px-3 py-2">{piece.dateValidite}</td>
+                    {personne?.piece?.map((piece, idx) => (
+                      <tr key={piece.numPiece} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+                        <td className="px-3 py-2">{piece.numPiece}</td>
+                        <td className="px-3 py-2">{piece.paysEmiPiece}</td>
+                        <td className="px-3 py-2">{piece.lieuEmiPiece}</td>
+                        <td className="px-3 py-2">{piece.datEmiPiece}</td>
+                        <td className="px-3 py-2">{piece.finValPiece}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -205,13 +268,13 @@ export default function PersonnePhysiqueDetail() {
                     />
                     <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
                   </div>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() => setShowCompteModal(true)}
                     className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
                   >
                     Ajouter un compte
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <div className="overflow-auto">
@@ -227,14 +290,14 @@ export default function PersonnePhysiqueDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {comptesAssocies.map((compte, idx) => (
-                      <tr key={compte.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+                    {personne?.compteAssocie?.map((compte, idx) => (
+                      <tr key={compte.numCpt} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
                         <td className="px-3 py-2">{idx + 1}</td>
-                        <td className="px-3 py-2">{compte.agence}</td>
-                        <td className="px-3 py-2">{compte.type}</td>
-                        <td className="px-3 py-2">{compte.numero}</td>
+                        <td className="px-3 py-2">{compte.codAgce}</td>
+                        <td className="px-3 py-2">{compte.typCpt}</td>
+                        <td className="px-3 py-2">{compte.numCpt}</td>
                         <td className="px-3 py-2">{compte.cleRib}</td>
-                        <td className="px-3 py-2">{compte.statut}</td>
+                        <td className="px-3 py-2">{compte.statCpt}</td>
                       </tr>
                     ))}
                   </tbody>

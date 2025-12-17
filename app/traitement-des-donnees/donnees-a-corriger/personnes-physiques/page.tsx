@@ -3,7 +3,7 @@
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
 import { FiChevronDown } from "react-icons/fi"
@@ -23,6 +23,43 @@ type PersonnePhysique = {
   lieuNaissance: string
   paysNaissance: string
   adresse: string
+  // Nouveaux champs
+  natDec?: string
+  idInterneClt?: string
+  datCreaPart?: string
+  nomNaiClt?: string
+  prenomClt?: string
+  etatCivil?: string
+  nomPere?: string
+  prenomPere?: string
+  nomNaiMere?: string
+  prmMre?: string
+  villeNai?: string
+  natClt?: string
+  resident?: string
+  paysRes?: string
+  mobile?: string
+  communeAdress?: string
+  sectInst?: string
+  numSecSoc?: string
+  sTutelle?: string
+  statutClt?: string
+  sitBancaire?: string
+  compteAssocie?: Array<{
+    codAgce: string
+    numCpt: string
+    cleRib: string
+    typCpt: string
+    statCpt: string
+  }>
+  piece?: Array<{
+    typPiece: string
+    numPiece: string
+    datEmiPiece: string
+    lieuEmiPiece: string
+    paysEmiPiece: string
+    finValPiece: string
+  }>
 }
 
 
@@ -43,6 +80,68 @@ export default function PersonnesPhysiquesPage() {
   const [personnes, setPersonnes] = useState<PersonnePhysique[]>([])
   const router = useRouter()
   const [countLines, setCountLines] = useState(0);
+
+  // useEffect pour charger et persister la date
+  useEffect(() => {
+    const savedDate = sessionStorage.getItem('selectedDate');
+    const savedPersonnes = sessionStorage.getItem('personnes');
+    const savedStatistics = sessionStorage.getItem('statistics');
+    const savedHasSearched = sessionStorage.getItem('hasSearched');
+
+    if (savedDate) {
+      const date = new Date(savedDate);
+      setSelectedDate(date);
+    }
+
+    if (savedPersonnes) {
+      try {
+        const personnesData = JSON.parse(savedPersonnes);
+        setPersonnes(personnesData);
+      } catch (error) {
+        console.error('Erreur lors du parsing des personnes:', error);
+      }
+    }
+
+    if (savedStatistics) {
+      try {
+        setStatistics(JSON.parse(savedStatistics));
+      } catch (error) {
+        console.error('Erreur lors du parsing des statistiques:', error);
+      }
+    }
+
+    if (savedHasSearched) {
+      try {
+        setHasSearched(JSON.parse(savedHasSearched));
+      } catch (error) {
+        console.error('Erreur lors du parsing de hasSearched:', error);
+      }
+    }
+  }, []);
+
+  // useEffect pour persister la date et les données à chaque changement
+  useEffect(() => {
+    if (selectedDate) {
+      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (personnes.length > 0) {
+      sessionStorage.setItem('personnes', JSON.stringify(personnes));
+    }
+  }, [personnes]);
+
+  useEffect(() => {
+    if (statistics.total > 0) {
+      sessionStorage.setItem('statistics', JSON.stringify(statistics));
+    }
+  }, [statistics]);
+
+  useEffect(() => {
+    sessionStorage.setItem('hasSearched', JSON.stringify(hasSearched));
+  }, [hasSearched]);
+
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
     const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
@@ -52,18 +151,64 @@ export default function PersonnesPhysiquesPage() {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(data, "text/xml");
     const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
-    const mapped = Array.from(personnesElements).map(el => ({
-      id: parseInt(el.getAttribute("IdInterneClt") || "0"),
-      natureClient: parseInt(el.getAttribute("NatClient") || "0"),
-      identifiant: el.getAttribute("NumSecSoc") || "",
-      nom: el.getAttribute("NomNaiClt") || "",
-      prenom: el.getAttribute("PrenomClt") || "",
-      sexe: el.getAttribute("Sexe") || "",
-      dateNaissance: el.getAttribute("DatNai") || "",
-      lieuNaissance: el.getAttribute("VilleNai") || "",
-      paysNaissance: el.getAttribute("PaysNai") || "",
-      adresse: el.getAttribute("Adress") || "",
-    }));
+    const mapped = Array.from(personnesElements).map(el => {
+      // Récupérer tous les CompteAssocie
+      const comptes = Array.from(el.querySelectorAll("CompteAssocie")).map(compte => ({
+        codAgce: compte.getAttribute("CodAgce") || "",
+        numCpt: compte.getAttribute("NumCpt") || "",
+        cleRib: compte.getAttribute("CleRib") || "",
+        typCpt: compte.getAttribute("TypCpt") || "",
+        statCpt: compte.getAttribute("StatCpt") || "",
+      }));
+
+      // Récupérer tous les Piece
+      const pieces = Array.from(el.querySelectorAll("Piece")).map(piece => ({
+        typPiece: piece.getAttribute("TypPiece") || "",
+        numPiece: piece.getAttribute("NumPiece") || "",
+        datEmiPiece: piece.getAttribute("DatEmiPiece") || "",
+        lieuEmiPiece: piece.getAttribute("LieuEmiPiece") || "",
+        paysEmiPiece: piece.getAttribute("PaysEmiPiece") || "",
+        finValPiece: piece.getAttribute("FinValPiece") || "",
+      }));
+
+      return {
+        id: parseInt(el.getAttribute("IdInterneClt") || "0"),
+        natureClient: parseInt(el.getAttribute("NatClient") || "0"),
+        identifiant: el.getAttribute("NumSecSoc") || "",
+        nom: el.getAttribute("NomNaiClt") || "",
+        prenom: el.getAttribute("PrenomClt") || "",
+        sexe: el.getAttribute("Sexe") || "",
+        dateNaissance: el.getAttribute("DatNai") || "",
+        lieuNaissance: el.getAttribute("VilleNai") || "",
+        paysNaissance: el.getAttribute("PaysNai") || "",
+        adresse: el.getAttribute("Adress") || "",
+        // Nouveaux champs
+        natDec: el.getAttribute("NatDec") || "",
+        idInterneClt: el.getAttribute("IdInterneClt") || "",
+        datCreaPart: el.getAttribute("DatCreaPart") || "",
+        nomNaiClt: el.getAttribute("NomNaiClt") || "",
+        prenomClt: el.getAttribute("PrenomClt") || "",
+        etatCivil: el.getAttribute("EtatCivil") || "",
+        nomPere: el.getAttribute("NomPere") || "",
+        prenomPere: el.getAttribute("PrenomPere") || "",
+        nomNaiMere: el.getAttribute("NomNaiMere") || "",
+        prmMre: el.getAttribute("PrmMre") || "",
+        villeNai: el.getAttribute("VilleNai") || "",
+        natClt: el.getAttribute("NatClt") || "",
+        resident: el.getAttribute("Resident") || "",
+        paysRes: el.getAttribute("PaysRes") || "",
+        mobile: el.getAttribute("Mobile") || "",
+        communeAdress: el.getAttribute("CommuneAdress") || "",
+        sectInst: el.getAttribute("SectInst") || "",
+        numSecSoc: el.getAttribute("NumSecSoc") || "",
+        sTutelle: el.getAttribute("STutelle") || "",
+        statutClt: el.getAttribute("StatutClt") || "",
+        sitBancaire: el.getAttribute("SitBancaire") || "",
+        // Éléments imbriqués
+        compteAssocie: comptes,
+        piece: pieces,
+      };
+    });
     setPersonnes(mapped);
     setCountLines(mapped.length);
     return mapped.length;
@@ -86,7 +231,7 @@ export default function PersonnesPhysiquesPage() {
     setIsLoading(true)
     setHasSearched(false)
     // Vider les personnes et réinitialiser les statistiques à 0 pendant la recherche
-    setPersonnes([])
+    // setPersonnes([])
     setStatistics({
       total: 0,
       enAttente: 0,
@@ -294,8 +439,12 @@ export default function PersonnesPhysiquesPage() {
                       <td className="px-3 py-2 text-center text-slate-500">
                         <button
                           type="button"
-                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
-                          className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
+                          onClick={() => {
+                            // Stocker les données dans sessionStorage
+                            sessionStorage.setItem('personneData', JSON.stringify(personne));
+                            router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`);
+                          }}
+                          className="flex items-center justify-center rounded-full p-2 hover:text-blue-600"
                         >
                           <MdOutlineZoomIn size={18} />
                         </button>
