@@ -3,7 +3,7 @@
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
 import { HiOutlineDownload } from "react-icons/hi"
@@ -11,12 +11,39 @@ import { fr } from "date-fns/locale"
 import "react-datepicker/dist/react-datepicker.css"
 import DatePicker from "react-datepicker"
 
+
 type Engagement = {
-  reference: string
-  devise: string
-  periodeRemboursement: string
-  montant: string
-  nombreEcherance: string
+  natDec: string;
+  typEve: string;
+  refIntEng: string;
+  ligneParent: string;
+  typeModif: string;
+  cloture: string;
+  dateMEP: string;
+  typEng: string;
+  mntEng: string;
+  mntInt: string;
+  codDev: string;
+  periodRemb: string;
+  txIntEng: string;
+  typTxInt: string;
+  txEffGlob: string;
+  moyRemb: string;
+  typAmo: string;
+  typDiffAmo: string;
+  mntEch: string;
+  nbrEch: string;
+  datPremEch: string;
+  datFin: string;
+  mntFrais: string;
+  mntComm: string;
+  codAgce: string;
+  estRachatCreance: string;
+  datEvent: string;
+  beneficiaire:Array<{
+    IdIntBen: string;
+    PourBenef: string;
+  }>
 }
 
 
@@ -40,6 +67,65 @@ export default function EngagementsPage() {
   )
   const router = useRouter()
 
+  useEffect(() => {
+    const savedDate = sessionStorage.getItem('selectedDateEngagements');
+    const savedEngagements = sessionStorage.getItem('engagements');
+    const savedStatisticsEngagements = sessionStorage.getItem('statisticsEngagements');
+    const savedHasSearchedEngagements = sessionStorage.getItem('hasSearchedEngagements');
+  
+    if (savedDate) {
+      const date = new Date(savedDate);
+      setSelectedDate(date);
+    }
+
+    if (savedEngagements) {
+      try {
+        const personnesData = JSON.parse(savedEngagements);
+        setEngagements(personnesData);
+      } catch (error) {
+        console.error('Erreur lors du parsing des engagements:', error);
+       }
+    }
+
+    if (savedStatisticsEngagements) {
+      try {
+        setStatistics(JSON.parse(savedStatisticsEngagements));
+      } catch (error) {
+        console.error('Erreur lors du parsing des statistiques:', error);
+      }
+    }
+
+    if (savedHasSearchedEngagements) {
+      try {
+        setHasSearched(JSON.parse(savedHasSearchedEngagements));
+      } catch (error) {
+        console.error('Erreur lors du parsing de hasSearched:', error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      sessionStorage.setItem('selectedDateEngagements', selectedDate.toISOString());
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (engagements.length > 0) {
+      sessionStorage.setItem('engagements', JSON.stringify(engagements));
+    }
+  }, [engagements]);
+
+  useEffect(() => {
+    if (statistics.total > 0) {
+      sessionStorage.setItem('statisticsEngagements', JSON.stringify(statistics));
+    }
+  }, [statistics]);
+
+  useEffect(() => {
+    sessionStorage.setItem('hasSearchedEngagements', JSON.stringify(hasSearched));
+  }, [hasSearched]);
+
   const fetchDataByDate = async (date: string) => {
     const response = await fetch(`http://10.0.16.4:8081/declaration/engagements?date=${date}`)
 
@@ -48,20 +134,46 @@ export default function EngagementsPage() {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(data, "text/xml");
     const personnesElements = xmlDoc.querySelectorAll("Engagement");
-    const mapped = Array.from(personnesElements).map(el => ({
-      reference: el.getAttribute("RefIntEng") || "XXXXXXX",
-      // client: el.getAttribute("NatClient") || "0",
-      montant: el.getAttribute("MntEng") || "",
-      devise: el.getAttribute("CodDev") || "",
-      periodeRemboursement: el.getAttribute("PeriodRemb") || "",
-      nombreEcherance: el.getAttribute("NbrEch") || "",
-      // dateNaissance: el.getAttribute("DatNai") || "",
-      // lieuNaissance: el.getAttribute("VilleNai") || "",
-      // paysNaissance: el.getAttribute("PaysNai") || "",
-      // adresse: el.getAttribute("Adress") || "",
+    const mapped = Array.from(personnesElements).map(el => {
 
-    }));
+        const beneficiaires = Array.from(el.querySelectorAll("Beneficiaire")).map(beneficiaire => ({
+          IdIntBen: beneficiaire.getAttribute("IdIntBen") || "",
+          PourBenef: beneficiaire.getAttribute("PourBenef") || "",
+        }));
+
+        return {
+          natDec: el.getAttribute("NatDec") || "",
+          typEve: el.getAttribute("TypEve") || "",
+          refIntEng: el.getAttribute("RefIntEng") || "",
+          ligneParent: el.getAttribute("LigneParent") || "",
+          typeModif: el.getAttribute("TypeModif") || "",
+          cloture: el.getAttribute("Cloture") || "",
+          dateMEP: el.getAttribute("DateMEP") || "",
+          typEng: el.getAttribute("TypEng") || "",
+          mntEng: el.getAttribute("MntEng") || "",
+          mntInt: el.getAttribute("MntInt") || "",
+          codDev: el.getAttribute("CodDev") || "",
+          periodRemb: el.getAttribute("PeriodRemb") || "",
+          txIntEng: el.getAttribute("TxIntEng") || "",
+          typTxInt: el.getAttribute("TypTxInt") || "",
+          txEffGlob: el.getAttribute("TxEffGlob") || "",
+          moyRemb: el.getAttribute("MoyRemb") || "",
+          typAmo: el.getAttribute("TypAmo") || "",
+          typDiffAmo: el.getAttribute("TypDiffAmo") || "",
+          mntEch: el.getAttribute("MntEch") || "",
+          nbrEch: el.getAttribute("NbrEch") || "",
+          datPremEch: el.getAttribute("DatPremEch") || "",
+          datFin: el.getAttribute("DatFin") || "",
+          mntFrais: el.getAttribute("MntFrais") || "",
+          mntComm: el.getAttribute("MntComm") || "",
+          codAgce: el.getAttribute("CodAgce") || "",
+          estRachatCreance: el.getAttribute("EstRachatCreance") || "",
+          datEvent: el.getAttribute("DatEvent") || "",
+          beneficiaire: beneficiaires,
+        }
+    });
     setEngagements(mapped);
+    console.log('Engagements récupérés :', mapped);
     setCountLines(mapped.length);
     return mapped.length;
   }
@@ -286,24 +398,27 @@ export default function EngagementsPage() {
                 ) : (
                   engagements.map((Engagement, idx) => (
                     <tr
-                      key={Engagement.reference}
+                      key={Engagement.refIntEng}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
                     >
                       <td className="px-3 py-2 text-center text-slate-500">
                         <button
                           type="button"
-                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${Engagement.reference}`)}
+                          onClick={() => {
+                            sessionStorage.setItem('engagementData', JSON.stringify(Engagement));
+                            router.push(`/traitement-des-donnees/donnees-a-corriger/engagements/${Engagement.refIntEng}`)
+                          }}
                           className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
                         >
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
-                      <td className="px-3 py-2">{Engagement.reference}</td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{Engagement.montant}</td>
-                      <td className="px-3 py-2">{Engagement.devise}</td>
-                      <td className="px-3 py-2">{Engagement.nombreEcherance}</td>
-                      <td className="px-3 py-2">{Engagement.periodeRemboursement}</td>
+                      <td className="px-3 py-2">{Engagement.refIntEng}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{Engagement.mntEng}</td>
+                      <td className="px-3 py-2">{Engagement.codDev}</td>
+                      <td className="px-3 py-2">{Engagement.nbrEch}</td>
+                      <td className="px-3 py-2">{Engagement.periodRemb}</td>
                       {/* <td className="px-3 py-2">{Engagement.sexe}</td>
                       <td className="px-3 py-2">{Engagement.dateNaissance}</td>
                       <td className="px-3 py-2">{Engagement.lieuNaissance}</td>
