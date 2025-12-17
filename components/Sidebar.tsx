@@ -51,7 +51,7 @@ const sections: Section[] = [
       { icon: FaBuilding , label: "Personnes morales", href: "/traitement-des-donnees/donnees-a-corriger/personnes-morales" },
       { icon: CiCreditCard1, label: "Comptes débiteurs", href: "/traitement-des-donnees/donnees-a-corriger/comptes-debiteurs" },
       { icon: BsPen, label: "Engagements", href: "/traitement-des-donnees/donnees-a-corriger/engagements" },
-      { icon: LuDatabase,label: "Encours d'engagements" }
+      { icon: LuDatabase,label: "Encours d'engagements" , href: "/traitement-des-donnees/donnees-a-corriger/encours-engagements" },
       // {
       //   icon: AiOutlineStop,
       //   label: "Données chargées à corriger",
