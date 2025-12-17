@@ -7,6 +7,7 @@ import { useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
 import { fr } from "date-fns/locale"
+import { HiOutlineDownload } from "react-icons/hi"
 import "react-datepicker/dist/react-datepicker.css"
 import DatePicker from "react-datepicker"
 
@@ -37,6 +38,7 @@ export default function ComptesDebiteursPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [comptes, setComptes] = useState<CompteDebiteur[]>([])
   const [statistics, setStatistics] = useState({
     total: 0,
     enAttente: 0,
@@ -50,7 +52,7 @@ export default function ComptesDebiteursPage() {
   const router = useRouter()
 
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
+    const response = await fetch(`http://10.0.16.4:8081/declaration/comptedebiteurs?date=${date}`)
 
     const data = await response.text()
 
@@ -69,8 +71,8 @@ export default function ComptesDebiteursPage() {
       paysNaissance: el.getAttribute("PaysNai") || "",
       adresse: el.getAttribute("Adress") || "",
     }));
-    setPersonnes(mapped);
-    setCountLines(mapped.length);
+    // setPersonnes(mapped);
+    // setCountLines(mapped.length);
     return mapped.length;
   }
 
@@ -91,7 +93,7 @@ export default function ComptesDebiteursPage() {
     setIsLoading(true)
     setHasSearched(false)
     // Vider les personnes et réinitialiser les statistiques à 0 pendant la recherche
-    setPersonnes([])
+    // setPersonnes([])
     setStatistics({
       total: 0,
       enAttente: 0,
@@ -117,22 +119,22 @@ export default function ComptesDebiteursPage() {
   }
 
   const handleExport = () => {
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-      <data>
-        <declaration>
-    ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
-        </declaration>
-      </data>
-    </Response>`;
+    // const xml = `<?xml version="1.0" encoding="UTF-8"?>
+    // <Response>
+    //   <data>
+    //     <declaration>
+    // ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
+    //     </declaration>
+    //   </data>
+    // </Response>`;
 
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'personnes.xml';
-    a.click();
-    URL.revokeObjectURL(url);
+    // const blob = new Blob([xml], { type: 'application/xml' });
+    // const url = URL.createObjectURL(blob);
+    // const a = document.createElement('a');
+    // a.href = url;
+    // a.download = 'personnes.xml';
+    // a.click();
+    // URL.revokeObjectURL(url);
   }
 
 
@@ -153,7 +155,7 @@ export default function ComptesDebiteursPage() {
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
           <div className="mb-6">
-            <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques</h1>
+            <h1 className="text-lg font-semibold text-slate-800">Liste des données de comptes débiteurs</h1>
           </div>
 
 
@@ -272,7 +274,7 @@ export default function ComptesDebiteursPage() {
                   <th className="px-3 py-2">Adresse</th>
                 </tr>
               </thead>
-              <tbody>
+              {/* <tbody>
                 {isLoading ? (
                   <tr>
                     <td colSpan={11} className="px-3 py-8 text-center">
@@ -319,7 +321,7 @@ export default function ComptesDebiteursPage() {
                     </tr>
                   ))
                 )}
-              </tbody>
+              </tbody> */}
             </table>
           </div>
 
