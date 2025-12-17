@@ -86,7 +86,8 @@ export default function PersonnesPhysiquesPage() {
 
     setIsLoading(true)
     setHasSearched(false)
-    // Réinitialiser les statistiques à 0 pendant la recherche
+    // Vider les personnes et réinitialiser les statistiques à 0 pendant la recherche
+    setPersonnes([])
     setStatistics({
       total: 0,
       enAttente: 0,
@@ -94,13 +95,12 @@ export default function PersonnesPhysiquesPage() {
       validees: 0,
     })
 
+    // Simuler une latence de 2 secondes
+    await new Promise(resolve => setTimeout(resolve, 500))
+
     //faire la requête pour récupérer les données en fonction de la date sélectionnée
     const count = await fetchDataByDate(formattedDate);
-    // console.log("Données récupérées :", data);
 
-    // Simuler une latence de 2 secondes
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
     // Une fois la recherche terminée, afficher les données
     setStatistics({
       total: count,
@@ -114,13 +114,13 @@ export default function PersonnesPhysiquesPage() {
 
   const handleExport = () => {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <data>
-    <declaration>
-${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
-    </declaration>
-  </data>
-</Response>`;
+    <Response>
+      <data>
+        <declaration>
+    ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
+        </declaration>
+      </data>
+    </Response>`;
 
     const blob = new Blob([xml], { type: 'application/xml' });
     const url = URL.createObjectURL(blob);
@@ -147,36 +147,26 @@ ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="
         <Navbar onToggleSidebar={() => setSidebarOpen((v) => !v)} />
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques à corriger</h1>
-            </div>
-            <div className="relative w-full max-w-xs">
-              <input
-                type="text"
-                placeholder="Rechercher"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-              />
-              <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            </div>
+          <div className="mb-6">
+            <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques</h1>
           </div>
 
 
           {/* Collapsible Card */}
           <div className="mb-6 rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <button
-              onClick={() => setIsCardOpen(!isCardOpen)}
+            {/* <button
+              // onClick={() => setIsCardOpen(!isCardOpen)}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
             >
               <h2 className="text-base font-semibold text-slate-800">Filtres et options</h2>
-              <FiChevronDown
+              {/* <FiChevronDown
                 size={20}
                 className={`text-slate-600 transition-transform duration-300 ${isCardOpen ? "rotate-180" : ""}`}
-              />
-            </button>
+              /> 
+            </button> */}
 
             {isCardOpen && (
-              <div className="border-t border-slate-200 px-6 py-4 bg-slate-50">
+              <div className="border-t border-slate-200 px-6 py-6 bg-slate-50">
                 <div className="flex items-center justify-center">
                   <div className="w-6/12 flex gap-4 items-center">
                     <div className="flex-1">
@@ -262,12 +252,23 @@ ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="
             </div>
           </div>
 
+          <div className="mb-4 flex justify-end">
+            <div className="relative w-full max-w-xs">
+              <input
+                type="text"
+                placeholder="Rechercher"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+              />
+              <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            </div>
+          </div>
+
           <div className="overflow-auto rounded-md border border-slate-200 shadow-sm bg-white">
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50">
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
                   <th className="w-12 px-3 py-2"></th>
-                  <th className="w-12 px-3 py-2"></th>
+                  {/* <th className="w-12 px-3 py-2"></th> */}
                   <th className="w-12 px-3 py-2">N°</th>
                   <th className="w-28 px-3 py-2">Nature client</th>
                   <th className="w-28 px-3 py-2">Identifiant</th>
@@ -281,35 +282,55 @@ ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="
                 </tr>
               </thead>
               <tbody>
-                {personnes.map((personne, idx) => (
-                  <tr
-                    key={personne.id}
-                    className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
-                  >
-                    <td className="px-3 py-2 text-center text-slate-500">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
-                        className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
-                      >
-                        <MdOutlineZoomIn size={18} />
-                      </button>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={11} className="px-3 py-8 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="text-slate-600 font-medium">Chargement des données...</span>
+                      </div>
                     </td>
-                    <td className="px-3 py-2">
-                      <input type="checkbox" className="checkbox checkbox-sm" />
-                    </td>
-                    <td>1</td>
-                    <td className="px-3 py-2">{personne.natureClient}</td>
-                    <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
-                    <td className="px-3 py-2">{personne.nom}</td>
-                    <td className="px-3 py-2">{personne.prenom}</td>
-                    <td className="px-3 py-2">{personne.sexe}</td>
-                    <td className="px-3 py-2">{personne.dateNaissance}</td>
-                    <td className="px-3 py-2">{personne.lieuNaissance}</td>
-                    <td className="px-3 py-2">{personne.paysNaissance}</td>
-                    <td className="px-3 py-2">{personne.adresse}</td>
                   </tr>
-                ))}
+                ) : personnes.length === 0 ? (
+                  <tr>
+                    <td colSpan={11} className="px-3 py-8 text-center text-slate-500">
+                      Aucune donnée disponible
+                    </td>
+                  </tr>
+                ) : (
+                  personnes.map((personne, idx) => (
+                    <tr
+                      key={personne.id}
+                      className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
+                    >
+                      <td className="px-3 py-2 text-center text-slate-500">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
+                          className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
+                        >
+                          <MdOutlineZoomIn size={18} />
+                        </button>
+                      </td>
+                      {/* <td className="px-3 py-2">
+                        <input type="checkbox" className="checkbox checkbox-sm" />
+                      </td> */}
+                      <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
+                      <td className="px-3 py-2">{personne.natureClient}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
+                      <td className="px-3 py-2">{personne.nom}</td>
+                      <td className="px-3 py-2">{personne.prenom}</td>
+                      <td className="px-3 py-2">{personne.sexe}</td>
+                      <td className="px-3 py-2">{personne.dateNaissance}</td>
+                      <td className="px-3 py-2">{personne.lieuNaissance}</td>
+                      <td className="px-3 py-2">{personne.paysNaissance}</td>
+                      <td className="px-3 py-2">{personne.adresse}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

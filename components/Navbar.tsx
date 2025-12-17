@@ -49,10 +49,10 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
           <IoMenu size={20} />
         </button>
 
-        <button className="flex h-11 w-11 items-center justify-center rounded-lg border border-blue-200 bg-blue-600 text-white shadow-md">
+        {/* <button className="flex h-11 w-11 items-center justify-center rounded-lg border border-blue-200 bg-blue-600 text-white shadow-md">
           <CiSettings size={22} />
-        </button>
-        <div className="flex items-stretch gap-3 overflow-x-auto">
+        </button> */}
+        {/* <div className="flex items-stretch gap-3 overflow-x-auto">
           {sessionData.map((item) => {
             const isMonitoring = item.label === "Monitoring"
             const card = (
@@ -79,14 +79,14 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
               <div key={item.label}>{card}</div>
             )
           })}
-        </div>
+        </div> */}
       </div>
 
       <div ref={profileRef} className="relative flex items-center gap-4">
-        <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-700">
+        {/* <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-700">
           <HiOutlineBell size={20} />
           <span className="absolute right-2 top-2 inline-block h-2 w-2 rounded-full bg-orange-400" />
-        </button>
+        </button> */}
 
         <button
           type="button"
@@ -109,14 +109,14 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
               <p className="text-xs text-slate-500">randomuser@pimjo.com</p>
             </div>
             <div className="space-y-3 text-sm text-slate-700">
-              <button className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-slate-50">
+              {/* <button className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-slate-50">
                 <span className="text-base">👤</span>
                 <span>Modifier le profil</span>
               </button>
               <button className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-slate-50">
                 <span className="text-base">⚙️</span>
                 <span>Paramètre</span>
-              </button>
+              </button> */}
               <div className="h-px bg-slate-200" />
               <button
                 type="button"
