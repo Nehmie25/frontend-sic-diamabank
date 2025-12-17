@@ -11,15 +11,18 @@ import { fr } from "date-fns/locale"
 import DatePicker from "react-datepicker"
 
 type PersonneMorale = {
-  id: number
-  natureClient: number
-  identifiant: string
-  raisonSociale: string
-  sigle: string
-  formeJuridique: string
-  dateCreation: string
-  pays: string
-  adresse: string
+  NatDec: string
+  NatClient: number
+  IdInterneClt: number
+  DenomSocial: string
+  DatCreat: string
+  Statut: string
+  DatCreaPart: string
+  FormeJuridique: string
+  PaysSiegeSocial: string
+  VilleSiegeSocial: string
+  Mobile: string
+  Adresse: string
 }
 
 
@@ -39,26 +42,32 @@ export default function PersonnesMoralesPage() {
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
   const router = useRouter()
+  const [personnes, setPersonnes] = useState<PersonneMorale[]>([])
+  const [countLines, setCountLines] = useState(0);
+  // Fonction pour appel api en get
 
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
+    const response = await fetch(`http://10.0.16.4:8081/declaration/personnemorale?date=${date}`)
 
     const data = await response.text()
 
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(data, "text/xml");
-    const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
+    const personnesElements = xmlDoc.querySelectorAll("PersonneMorale");
     const mapped = Array.from(personnesElements).map(el => ({
-      id: parseInt(el.getAttribute("IdInterneClt") || "0"),
-      natureClient: parseInt(el.getAttribute("NatClient") || "0"),
-      identifiant: el.getAttribute("NumSecSoc") || "",
-      nom: el.getAttribute("NomNaiClt") || "",
-      prenom: el.getAttribute("PrenomClt") || "",
-      sexe: el.getAttribute("Sexe") || "",
-      dateNaissance: el.getAttribute("DatNai") || "",
-      lieuNaissance: el.getAttribute("VilleNai") || "",
-      paysNaissance: el.getAttribute("PaysNai") || "",
-      adresse: el.getAttribute("Adress") || "",
+      NatDec: el.getAttribute("NatDec") || "00",
+      NatClient: parseInt(el.getAttribute("NatClient") || "0"),
+      IdInterneClt: parseInt(el.getAttribute("IdInterneClt") || "0"),
+      DenomSocial: el.getAttribute("DenomSocial") || "",
+      DatCreat: el.getAttribute("DatCreat") || "",
+      Statut: el.getAttribute("Statut") || "",
+      DatCreaPart: el.getAttribute("DatCreaPart") || "",
+      FormeJuridique: el.getAttribute("FormeJuridique") || "",
+      PaysSiegeSocial: el.getAttribute("PaysSiegeSocial") || "",
+      VilleSiegeSocial: el.getAttribute("VilleSiegeSocial") || "",
+      Mobile: el.getAttribute("Mobile") || "",
+      Adresse: el.getAttribute("Adress") || "",
+
     }));
     setPersonnes(mapped);
     setCountLines(mapped.length);
@@ -108,23 +117,23 @@ export default function PersonnesMoralesPage() {
   }
 
   const handleExport = () => {
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-      <data>
-        <declaration>
-    ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
-        </declaration>
-      </data>
-    </Response>`;
+  //   const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  //   // <Response>
+  //   //   <data>
+  //   //     <declaration>
+  //   // ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
+  //   //     </declaration>
+  //   //   </data>
+  //   // </Response>`;
 
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'personnes.xml';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  //   const blob = new Blob([xml], { type: 'application/xml' });
+  //   const url = URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'personnes.xml';
+  //   a.click();
+  //   URL.revokeObjectURL(url);
+ }
 
 
   return (
@@ -144,7 +153,7 @@ export default function PersonnesMoralesPage() {
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
           <div className="mb-6">
-            <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques</h1>
+            <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes morales</h1>
           </div>
 
 
@@ -163,12 +172,12 @@ export default function PersonnesMoralesPage() {
                         className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                       />
                     </div>
-                    <button 
+                    <button
                       onClick={handleSearch}
                       disabled={isLoading}
                       className={`rounded-md px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors ${
-                        isLoading 
-                          ? "bg-slate-400 cursor-not-allowed" 
+                        isLoading
+                          ? "bg-slate-400 cursor-not-allowed"
                           : "bg-[#1E4F9B] hover:bg-[#1a4587]"
                       }`}
                     >
@@ -209,7 +218,7 @@ export default function PersonnesMoralesPage() {
 
                 {/* Export Button */}
                 <div className="mt-6 flex justify-center">
-                  <button 
+                  <button
                     onClick={handleExport}
                     disabled={!hasSearched}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
@@ -218,7 +227,7 @@ export default function PersonnesMoralesPage() {
                         : "bg-slate-300 text-slate-500 cursor-not-allowed"
                     }`}
                   >
-                    <HiOutlineDownload size={18} />
+                    {/* <HiOutlineDownload size={18} /> */}
                     Exporter le fichier
                   </button>
                 </div>
@@ -253,20 +262,23 @@ export default function PersonnesMoralesPage() {
                   <th className="w-12 px-3 py-2"></th>
                   <th className="w-12 px-3 py-2">N°</th>
                   <th className="w-28 px-3 py-2">Nature client</th>
-                  <th className="w-28 px-3 py-2">Identifiant</th>
-                  <th className="px-3 py-2">Nom</th>
-                  <th className="px-3 py-2">Prénom</th>
-                  <th className="w-20 px-3 py-2">Sexe</th>
-                  <th className="w-32 px-3 py-2">Date de naissance</th>
-                  <th className="px-3 py-2">Lieu de naissance</th>
-                  <th className="px-3 py-2">Pays de naissance</th>
-                  <th className="px-3 py-2">Adresse</th>
+                  <th className="w-28 px-3 py-2">Nature déclaration</th>
+                  <th className="w-28 px-3 py-2">IdInterneClt</th>
+                  <th className="px-3 py-2">DenomSocial</th>
+                  <th className="px-3 py-2">Date Creation</th>
+                  <th className="w-20 px-3 py-2">Statut</th>
+                  <th className="w-32 px-3 py-2">Date de Creation Part</th>
+
+                  <th className="px-3 py-2">Pays de Siege Social</th>
+                  <th className="px-3 py-2">Ville de Siege Social</th>
+                  <th className="px-3 py-2">Mobile</th>
+                 <th className="px-3 py-2">Adresse</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={11} className="px-3 py-8 text-center">
+                    <td colSpan={14} className="px-3 py-8 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -278,35 +290,39 @@ export default function PersonnesMoralesPage() {
                   </tr>
                 ) : personnes.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-3 py-8 text-center text-slate-500">
+                    <td colSpan={14} className="px-3 py-8 text-center text-slate-500">
                       Aucune donnée disponible
                     </td>
                   </tr>
                 ) : (
                   personnes.map((personne, idx) => (
                     <tr
-                      key={personne.id}
+                      key={`${personne.IdInterneClt}-${idx}`}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
                     >
                       <td className="px-3 py-2 text-center text-slate-500">
                         <button
                           type="button"
-                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
+                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-morales/${personne.IdInterneClt}`)}
                           className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
                         >
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
-                      <td className="px-3 py-2">{personne.natureClient}</td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
-                      <td className="px-3 py-2">{personne.nom}</td>
-                      <td className="px-3 py-2">{personne.prenom}</td>
-                      <td className="px-3 py-2">{personne.sexe}</td>
-                      <td className="px-3 py-2">{personne.dateNaissance}</td>
-                      <td className="px-3 py-2">{personne.lieuNaissance}</td>
-                      <td className="px-3 py-2">{personne.paysNaissance}</td>
-                      <td className="px-3 py-2">{personne.adresse}</td>
+                      <td className="px-3 py-2">{personne.NatClient}</td>
+                      <td className="px-3 py-2">{personne.NatDec}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{personne.IdInterneClt}</td>
+                      <td className="px-3 py-2">{personne.DenomSocial}</td>
+                      <td className="px-3 py-2">{personne.DatCreat}</td>
+                      <td className="px-3 py-2">{personne.Statut}</td>
+                       <td className="px-3 py-2">{personne.DatCreaPart}</td>
+
+                        <td className="px-3 py-2">{personne.PaysSiegeSocial}</td>
+                        <td className="px-3 py-2">{personne.VilleSiegeSocial}</td>
+                        <td className="px-3 py-2">{personne.Mobile}</td>
+                      <td className="px-3 py-2">{personne.Adresse}</td>
+
                     </tr>
                   ))
                 )}
