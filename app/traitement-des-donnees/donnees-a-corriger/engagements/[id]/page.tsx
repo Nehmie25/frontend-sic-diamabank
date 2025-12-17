@@ -2,9 +2,43 @@
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import StepTimeline from "@/components/StepTimeline"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
+
+type Engagement = {
+  natDec: string;
+  typEve: string;
+  refIntEng: string;
+  ligneParent: string;
+  typeModif: string;
+  cloture: string;
+  dateMEP: string;
+  typEng: string;
+  mntEng: string;
+  mntInt: string;
+  codDev: string;
+  periodRemb: string;
+  txIntEng: string;
+  typTxInt: string;
+  txEffGlob: string;
+  moyRemb: string;
+  typAmo: string;
+  typDiffAmo: string;
+  mntEch: string;
+  nbrEch: string;
+  datPremEch: string;
+  datFin: string;
+  mntFrais: string;
+  mntComm: string;
+  codAgce: string;
+  estRachatCreance: string;
+  datEvent: string;
+  beneficiaire:Array<{
+    IdIntBen: string;
+    PourBenef: string;
+  }>
+}
 
 const stepLabels = ["Informations engagement", "Garanties", "Échéancier", "Infos complémentaires"]
 
@@ -65,6 +99,18 @@ const Field = ({
 }
 
 export default function EngagementDetail() {
+
+  const [engagement, setEngagement] = useState<Engagement>({} as Engagement);
+  useEffect(() => {
+    const data = sessionStorage.getItem('engagementData')
+    if (data) {
+      const parsed = JSON.parse(data);
+      setEngagement({
+        ...parsed,
+        beneficiaire: parsed.beneficiaire || [],
+      });
+    }
+  }, [])
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
@@ -111,22 +157,22 @@ export default function EngagementDetail() {
             <>
               <SectionCard title="Références de l’engagement" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Référence" value="ENG-2024-001" required success />
-                  <Field label="Type d’engagement" value="Crédit moyen terme" required />
-                  <Field label="Montant accordé" value="50 000 000" required />
-                  <Field label="Devise" value="GNF" />
-                  <Field label="Date de mise en place" value="2024-01-15" required />
-                  <Field label="Taux appliqué" value="9,5%" />
-                  <Field label="Durée (mois)" value="36" />
-                  <Field label="Statut" value="À corriger" />
+                  <Field label="Référence" value={engagement.refIntEng || ""} required success />
+                  <Field label="Type d’engagement" value={engagement.typEng || ""} required />
+                  <Field label="Montant accordé" value={engagement.mntEng || ""} required />
+                  <Field label="Devise" value={engagement.codDev || ""} />
+                  <Field label="Date de mise en place" value={engagement.dateMEP || ""} required />
+                  <Field label="Taux appliqué" value={engagement.txIntEng || ""} />
+                  <Field label="Durée (mois)" value={engagement.periodRemb || ""} />
+                  <Field label="Statut" value={engagement.cloture || ""} />
                 </div>
               </SectionCard>
 
               <SectionCard title="Partie prenante" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-3">
-                  <Field label="Client" value="Société Minière Kankou" required />
-                  <Field label="Identifiant client" value="CLI-001" required />
-                  <Field label="Agence" value="AG-001" />
+                  <Field label="Client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} required />
+                  <Field label="Identifiant client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} required />
+                  <Field label="Agence" value={engagement.codAgce || ""} />
                   <Field label="Gestionnaire" value="Mamadou Bah" />
                   <Field label="Objet du financement" value="Equipements industriels" />
                 </div>
@@ -145,13 +191,13 @@ export default function EngagementDetail() {
                     />
                     <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
                   </div>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() => setShowPieceModal(true)}
                     className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
                   >
                     Ajouter une garantie
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <div className="overflow-auto">
