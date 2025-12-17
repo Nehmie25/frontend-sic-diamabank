@@ -3,31 +3,45 @@
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { HiOutlineSearch } from "react-icons/hi"
+import { useEffect, useState } from "react"
+import { HiOutlineDownload, HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
 import "react-datepicker/dist/react-datepicker.css"
 import { fr } from "date-fns/locale"
 import DatePicker from "react-datepicker"
 
-type PersonneMorale = {
-  NatDec: string
-  NatClient: number
-  IdInterneClt: number
-  DenomSocial: string
-  DatCreat: string
-  Statut: string
-  DatCreaPart: string
-  FormeJuridique: string
-  PaysSiegeSocial: string
-  VilleSiegeSocial: string
-  Mobile: string
-  Adresse: string
+type CompteAssocie = {
+  codAgce: string
+  numCpt: string
+  cleRib: string
+  statCpt: string
 }
 
+type PersonneMorale = {
+  natDec: string
+  natClient: string
+  idInterneClt: string
+  denomSocial: string
+  datCreat: string
+  statut: string
+  datCreaPart: string
+  formeJuridique?: string
+  paysSiegeSocial?: string
+  villeSiegeSocial?: string
+  mobile?: string
+  adress?: string
+  codePostal?: string
+  resident?: string
+  actEcon?: string
+  sectInst?: string
+  sitBancaire?: string
+  rccm?: string
+  nifp?: string
+  email?: string
+  compteAssocie?: CompteAssocie[]
+}
 
 export default function PersonnesMoralesPage() {
-
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -37,60 +51,124 @@ export default function PersonnesMoralesPage() {
     rejetees: 0,
     validees: 0,
   })
-
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
   const router = useRouter()
   const [personnes, setPersonnes] = useState<PersonneMorale[]>([])
-  const [countLines, setCountLines] = useState(0);
-  // Fonction pour appel api en get
+
+  useEffect(() => {
+    const savedDate = sessionStorage.getItem("pm_selectedDate")
+    const savedPersonnes = sessionStorage.getItem("pm_personnes")
+    const savedStatistics = sessionStorage.getItem("pm_statistics")
+    const savedHasSearched = sessionStorage.getItem("pm_hasSearched")
+
+    if (savedDate) {
+      setSelectedDate(new Date(savedDate))
+    }
+    if (savedPersonnes) {
+      try {
+        setPersonnes(JSON.parse(savedPersonnes))
+      } catch (error) {
+        console.error("Erreur parsing personnes morales :", error)
+      }
+    }
+    if (savedStatistics) {
+      try {
+        setStatistics(JSON.parse(savedStatistics))
+      } catch (error) {
+        console.error("Erreur parsing statistiques personnes morales :", error)
+      }
+    }
+    if (savedHasSearched) {
+      try {
+        setHasSearched(JSON.parse(savedHasSearched))
+      } catch (error) {
+        console.error("Erreur parsing hasSearched personnes morales :", error)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedDate) {
+      sessionStorage.setItem("pm_selectedDate", selectedDate.toISOString())
+    }
+  }, [selectedDate])
+
+  useEffect(() => {
+    if (personnes.length > 0) {
+      sessionStorage.setItem("pm_personnes", JSON.stringify(personnes))
+    }
+  }, [personnes])
+
+  useEffect(() => {
+    if (statistics.total > 0) {
+      sessionStorage.setItem("pm_statistics", JSON.stringify(statistics))
+    }
+  }, [statistics])
+
+  useEffect(() => {
+    sessionStorage.setItem("pm_hasSearched", JSON.stringify(hasSearched))
+  }, [hasSearched])
 
   const fetchDataByDate = async (date: string) => {
     const response = await fetch(`http://10.0.16.4:8081/declaration/personnemorale?date=${date}`)
-
     const data = await response.text()
 
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(data, "text/xml");
-    const personnesElements = xmlDoc.querySelectorAll("PersonneMorale");
-    const mapped = Array.from(personnesElements).map(el => ({
-      NatDec: el.getAttribute("NatDec") || "00",
-      NatClient: parseInt(el.getAttribute("NatClient") || "0"),
-      IdInterneClt: parseInt(el.getAttribute("IdInterneClt") || "0"),
-      DenomSocial: el.getAttribute("DenomSocial") || "",
-      DatCreat: el.getAttribute("DatCreat") || "",
-      Statut: el.getAttribute("Statut") || "",
-      DatCreaPart: el.getAttribute("DatCreaPart") || "",
-      FormeJuridique: el.getAttribute("FormeJuridique") || "",
-      PaysSiegeSocial: el.getAttribute("PaysSiegeSocial") || "",
-      VilleSiegeSocial: el.getAttribute("VilleSiegeSocial") || "",
-      Mobile: el.getAttribute("Mobile") || "",
-      Adresse: el.getAttribute("Adress") || "",
+    const parser = new DOMParser()
+    const xmlDoc = parser.parseFromString(data, "text/xml")
+    const personnesElements = xmlDoc.querySelectorAll("PersonneMorale")
+    const mapped = Array.from(personnesElements).map((el) => {
+      const comptes = Array.from(el.querySelectorAll("CompteAssocie")).map((compte) => ({
+        codAgce: compte.getAttribute("CodAgce") || "",
+        numCpt: compte.getAttribute("NumCpt") || "",
+        cleRib: compte.getAttribute("CleRib") || "",
+        statCpt: compte.getAttribute("StatCpt") || "",
+      }))
 
-    }));
-    setPersonnes(mapped);
-    setCountLines(mapped.length);
-    return mapped.length;
+      return {
+        natDec: el.getAttribute("NatDec") || "",
+        natClient: el.getAttribute("NatClient") || "",
+        idInterneClt: el.getAttribute("IdInterneClt") || "",
+        denomSocial: el.getAttribute("DenomSocial") || "",
+        datCreat: el.getAttribute("DatCreat") || "",
+        statut: el.getAttribute("Statut") || "",
+        datCreaPart: el.getAttribute("DatCreaPart") || "",
+        formeJuridique: el.getAttribute("FormeJuridique") || "",
+        paysSiegeSocial: el.getAttribute("PaysSiegeSocial") || "",
+        villeSiegeSocial: el.getAttribute("VilleSiegeSocial") || "",
+        mobile: el.getAttribute("Mobile") || "",
+        adress: el.getAttribute("Adress") || "",
+        codePostal: el.getAttribute("CodePostal") || "",
+        resident: el.getAttribute("Resident") || "",
+        actEcon: el.getAttribute("ActEcon") || "",
+        sectInst: el.getAttribute("SectInst") || "",
+        sitBancaire: el.getAttribute("SitBancaire") || "",
+        rccm: el.getAttribute("RCCM") || "",
+        nifp: el.getAttribute("NIFP") || "",
+        email: el.getAttribute("Email") || "",
+        compteAssocie: comptes,
+      } as PersonneMorale
+    })
+
+    setPersonnes(mapped)
+    return mapped.length
   }
 
   const handleSearch = async () => {
-    // Vérifier si une date a été sélectionnée
     if (!selectedDate) {
-      alert("Veuillez sélectionner une date");
-      return;
+      alert("Veuillez sélectionner une date")
+      return
     }
 
-    // Formater la date en jj/mm/aa
     const formattedDate = selectedDate.toLocaleDateString("fr-FR", {
       day: "2-digit",
       month: "2-digit",
-      year: "2-digit"
-    });
+      year: "2-digit",
+    })
 
     setIsLoading(true)
     setHasSearched(false)
-    // Vider les personnes et réinitialiser les statistiques à 0 pendant la recherche
     setPersonnes([])
     setStatistics({
       total: 0,
@@ -99,13 +177,9 @@ export default function PersonnesMoralesPage() {
       validees: 0,
     })
 
-    // Simuler une latence de 2 secondes
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
-    //faire la requête pour récupérer les données en fonction de la date sélectionnée
-    const count = await fetchDataByDate(formattedDate);
-
-    // Une fois la recherche terminée, afficher les données
+    const count = await fetchDataByDate(formattedDate)
     setStatistics({
       total: count,
       enAttente: 0,
@@ -117,24 +191,30 @@ export default function PersonnesMoralesPage() {
   }
 
   const handleExport = () => {
-  //   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-  //   // <Response>
-  //   //   <data>
-  //   //     <declaration>
-  //   // ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
-  //   //     </declaration>
-  //   //   </data>
-  //   // </Response>`;
+    if (!hasSearched || personnes.length === 0) return
 
-  //   const blob = new Blob([xml], { type: 'application/xml' });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement('a');
-  //   a.href = url;
-  //   a.download = 'personnes.xml';
-  //   a.click();
-  //   URL.revokeObjectURL(url);
- }
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <data>
+    <declaration>
+${personnes
+  .map(
+    (p) =>
+      `      <PersonneMorale NatDec="${p.natDec}" NatClient="${p.natClient}" IdInterneClt="${p.idInterneClt}" DenomSocial="${p.denomSocial}" DatCreat="${p.datCreat}" Statut="${p.statut}" DatCreaPart="${p.datCreaPart}" FormeJuridique="${p.formeJuridique ?? ""}" PaysSiegeSocial="${p.paysSiegeSocial ?? ""}" VilleSiegeSocial="${p.villeSiegeSocial ?? ""}" Mobile="${p.mobile ?? ""}" Adress="${p.adress ?? ""}" CodePostal="${p.codePostal ?? ""}" Resident="${p.resident ?? ""}" ActEcon="${p.actEcon ?? ""}" SectInst="${p.sectInst ?? ""}" SitBancaire="${p.sitBancaire ?? ""}" RCCM="${p.rccm ?? ""}" NIFP="${p.nifp ?? ""}" Email="${p.email ?? ""}"></PersonneMorale>`
+  )
+  .join("\n")}
+    </declaration>
+  </data>
+</Response>`
 
+    const blob = new Blob([xml], { type: "application/xml" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "personnes-morales.xml"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
@@ -146,9 +226,7 @@ export default function PersonnesMoralesPage() {
         <div className="fixed inset-0 z-10 bg-black/20 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)} />
       ) : null}
 
-      <main
-        className="flex min-h-screen flex-col transition-all duration-200 md:ml-72"
-      >
+      <main className="flex min-h-screen flex-col transition-all duration-200 md:ml-72">
         <Navbar onToggleSidebar={() => setSidebarOpen((v) => !v)} />
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
@@ -156,85 +234,76 @@ export default function PersonnesMoralesPage() {
             <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes morales</h1>
           </div>
 
-
-          {/* Collapsible Card */}
           <div className="mb-6 rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="border-t border-slate-200 px-6 py-6 bg-slate-50">
-                <div className="flex items-center justify-center">
-                  <div className="w-6/12 flex gap-4 items-center">
-                    <div className="flex-1">
-                      <DatePicker
-                        selected={selectedDate}
-                        onChange={(date) => setSelectedDate(date)}
-                        dateFormat="dd/MM/yyyy"
-                        locale={fr}
-                        placeholderText="Sélectionner une date"
-                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      />
-                    </div>
-                    <button
-                      onClick={handleSearch}
-                      disabled={isLoading}
-                      className={`rounded-md px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors ${
-                        isLoading
-                          ? "bg-slate-400 cursor-not-allowed"
-                          : "bg-[#1E4F9B] hover:bg-[#1a4587]"
-                      }`}
-                    >
-                      {isLoading ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Recherche en cours...
-                        </span>
-                      ) : (
-                        "Rechercher"
-                      )}
-                    </button>
+            <div className="border-t border-slate-200 px-6 py-6 bg-slate-50">
+              <div className="flex items-center justify-center">
+                <div className="w-6/12 flex gap-4 items-center">
+                  <div className="flex-1">
+                    <DatePicker
+                      selected={selectedDate}
+                      onChange={(date) => setSelectedDate(date)}
+                      dateFormat="dd/MM/yyyy"
+                      locale={fr}
+                      placeholderText="Sélectionner une date"
+                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    />
                   </div>
-                </div>
-
-                {/* 4 Statistics Cards */}
-                <div className="mt-6 grid grid-cols-4 gap-4">
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-blue-600">{statistics.total}</div>
-                    <div className="mt-2 text-sm text-slate-600">Total déclarations</div>
-                  </div>
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-orange-600">{statistics.enAttente}</div>
-                    <div className="mt-2 text-sm text-slate-600">En attente de correction</div>
-                  </div>
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-red-600">{statistics.rejetees}</div>
-                    <div className="mt-2 text-sm text-slate-600">Rejetées</div>
-                  </div>
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-green-600">{statistics.validees}</div>
-                    <div className="mt-2 text-sm text-slate-600">Validées</div>
-                  </div>
-                </div>
-
-                {/* Export Button */}
-                <div className="mt-6 flex justify-center">
                   <button
-                    onClick={handleExport}
-                    disabled={!hasSearched}
-                    className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                      hasSearched
-                        ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
-                        : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    onClick={handleSearch}
+                    disabled={isLoading}
+                    className={`rounded-md px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors ${
+                      isLoading ? "bg-slate-400 cursor-not-allowed" : "bg-[#1E4F9B] hover:bg-[#1a4587]"
                     }`}
                   >
-                    {/* <HiOutlineDownload size={18} /> */}
-                    Exporter le fichier
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Recherche en cours...
+                      </span>
+                    ) : (
+                      "Rechercher"
+                    )}
                   </button>
                 </div>
               </div>
+
+              <div className="mt-6 grid grid-cols-4 gap-4">
+                <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-blue-600">{statistics.total}</div>
+                  <div className="mt-2 text-sm text-slate-600">Total déclarations</div>
+                </div>
+                <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-orange-600">{statistics.enAttente}</div>
+                  <div className="mt-2 text-sm text-slate-600">En attente de correction</div>
+                </div>
+                <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-red-600">{statistics.rejetees}</div>
+                  <div className="mt-2 text-sm text-slate-600">Rejetées</div>
+                </div>
+                <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-green-600">{statistics.validees}</div>
+                  <div className="mt-2 text-sm text-slate-600">Validées</div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={handleExport}
+                  disabled={!hasSearched}
+                  className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
+                    hasSearched ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer" : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                  }`}
+                >
+                  <HiOutlineDownload size={18} />
+                  Exporter le fichier
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Warning Message */}
           <div className="mb-6 rounded-md border border-orange-300 bg-orange-50 p-4 text-sm text-orange-800">
             <div className="flex items-center justify-center gap-3">
               <svg className="h-5 w-5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
@@ -264,21 +333,20 @@ export default function PersonnesMoralesPage() {
                   <th className="w-28 px-3 py-2">Nature client</th>
                   <th className="w-28 px-3 py-2">Nature déclaration</th>
                   <th className="w-28 px-3 py-2">IdInterneClt</th>
-                  <th className="px-3 py-2">DenomSocial</th>
-                  <th className="px-3 py-2">Date Creation</th>
+                  <th className="px-3 py-2">Dénomination sociale</th>
+                  <th className="px-3 py-2">Date création</th>
                   <th className="w-20 px-3 py-2">Statut</th>
-                  <th className="w-32 px-3 py-2">Date de Creation Part</th>
-
-                  <th className="px-3 py-2">Pays de Siege Social</th>
-                  <th className="px-3 py-2">Ville de Siege Social</th>
+                  <th className="w-32 px-3 py-2">Date création part.</th>
+                  <th className="px-3 py-2">Pays siège social</th>
+                  <th className="px-3 py-2">Ville siège social</th>
                   <th className="px-3 py-2">Mobile</th>
-                 <th className="px-3 py-2">Adresse</th>
+                  <th className="px-3 py-2">Adresse</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={14} className="px-3 py-8 text-center">
+                    <td colSpan={13} className="px-3 py-8 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -290,46 +358,46 @@ export default function PersonnesMoralesPage() {
                   </tr>
                 ) : personnes.length === 0 ? (
                   <tr>
-                    <td colSpan={14} className="px-3 py-8 text-center text-slate-500">
+                    <td colSpan={13} className="px-3 py-8 text-center text-slate-500">
                       Aucune donnée disponible
                     </td>
                   </tr>
                 ) : (
                   personnes.map((personne, idx) => (
                     <tr
-                      key={`${personne.IdInterneClt}-${idx}`}
+                      key={`${personne.idInterneClt}-${idx}`}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
                     >
                       <td className="px-3 py-2 text-center text-slate-500">
                         <button
                           type="button"
-                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-morales/${personne.IdInterneClt}`)}
+                          onClick={() => {
+                            sessionStorage.setItem("personneMoraleData", JSON.stringify(personne))
+                            router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-morales/${personne.idInterneClt}`)
+                          }}
                           className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
                         >
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
-                      <td className="px-3 py-2">{personne.NatClient}</td>
-                      <td className="px-3 py-2">{personne.NatDec}</td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{personne.IdInterneClt}</td>
-                      <td className="px-3 py-2">{personne.DenomSocial}</td>
-                      <td className="px-3 py-2">{personne.DatCreat}</td>
-                      <td className="px-3 py-2">{personne.Statut}</td>
-                       <td className="px-3 py-2">{personne.DatCreaPart}</td>
-
-                        <td className="px-3 py-2">{personne.PaysSiegeSocial}</td>
-                        <td className="px-3 py-2">{personne.VilleSiegeSocial}</td>
-                        <td className="px-3 py-2">{personne.Mobile}</td>
-                      <td className="px-3 py-2">{personne.Adresse}</td>
-
+                      <td className="px-3 py-2">{personne.natClient}</td>
+                      <td className="px-3 py-2">{personne.natDec}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{personne.idInterneClt}</td>
+                      <td className="px-3 py-2">{personne.denomSocial}</td>
+                      <td className="px-3 py-2">{personne.datCreat}</td>
+                      <td className="px-3 py-2">{personne.statut}</td>
+                      <td className="px-3 py-2">{personne.datCreaPart}</td>
+                      <td className="px-3 py-2">{personne.paysSiegeSocial}</td>
+                      <td className="px-3 py-2">{personne.villeSiegeSocial}</td>
+                      <td className="px-3 py-2">{personne.mobile}</td>
+                      <td className="px-3 py-2">{personne.adress}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-
         </div>
       </main>
     </div>

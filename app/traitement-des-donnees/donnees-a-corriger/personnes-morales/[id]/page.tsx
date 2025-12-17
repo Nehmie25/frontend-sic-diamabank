@@ -2,21 +2,43 @@
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import StepTimeline from "@/components/StepTimeline"
-import { useState } from "react"
+import { useParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
 
+type CompteAssocie = {
+  codAgce: string
+  numCpt: string
+  cleRib: string
+  statCpt: string
+}
+
+type PersonneMorale = {
+  natDec?: string
+  natClient?: string
+  idInterneClt: string
+  denomSocial?: string
+  datCreat?: string
+  datCreaPart?: string
+  statut?: string
+  formeJuridique?: string
+  paysSiegeSocial?: string
+  villeSiegeSocial?: string
+  mobile?: string
+  adress?: string
+  codePostal?: string
+  resident?: string
+  actEcon?: string
+  sectInst?: string
+  sitBancaire?: string
+  rccm?: string
+  nifp?: string
+  email?: string
+  compteAssocie?: CompteAssocie[]
+}
+
 const stepLabels = ["Informations générales", "Documents légaux", "Comptes associés", "Infos complémentaires"]
-
-const documentsLegaux = [
-  { type: "RCCM", numero: "GN-KAL-2024-001", pays: "GN", lieu: "Kaloum", dateEmission: "2024-01-10", dateValidite: "2029-01-10" },
-  { type: "NIF", numero: "NIF-2024-9988", pays: "GN", lieu: "DGI", dateEmission: "2023-05-01", dateValidite: "2026-05-01" },
-]
-
-const comptesAssocies = [
-  { numero: "123456789", agence: "AG-001", type: "Compte courant", cleRib: "21", statut: "Actif" },
-  { numero: "0123456789", agence: "AG-002", type: "Épargne", cleRib: "10", statut: "Inactif" },
-]
 
 const SectionCard = ({ title, children, error }: { title: string; children: React.ReactNode; error?: string }) => (
   <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -65,6 +87,9 @@ const Field = ({
 }
 
 export default function PersonneMoraleDetail() {
+  const params = useParams()
+  const idParam = typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : ""
+  const [personne, setPersonne] = useState<PersonneMorale | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
@@ -77,12 +102,70 @@ export default function PersonneMoraleDetail() {
     2: "success",
   }
 
+  useEffect(() => {
+    if (!idParam || personne) return
+
+    const stored = sessionStorage.getItem("personneMoraleData")
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as PersonneMorale
+        if (parsed.idInterneClt === idParam) {
+          setPersonne(parsed)
+          return
+        }
+      } catch (error) {
+        console.error("Erreur lors du parsing de personneMoraleData:", error)
+      }
+    }
+
+    const savedList = sessionStorage.getItem("pm_personnes")
+    if (savedList) {
+      try {
+        const parsedList = JSON.parse(savedList) as PersonneMorale[]
+        const fromList = parsedList.find((p) => p.idInterneClt === idParam)
+        if (fromList) {
+          setPersonne(fromList)
+        }
+      } catch (error) {
+        console.error("Erreur lors du parsing de pm_personnes:", error)
+      }
+    }
+  }, [idParam, personne])
+
+  const documentsLegaux = useMemo(() => {
+    if (!personne) return []
+    const docs = []
+    if (personne.rccm) {
+      docs.push({
+        type: "RCCM",
+        numero: personne.rccm,
+        pays: personne.paysSiegeSocial || "",
+        lieu: personne.villeSiegeSocial || "",
+        dateEmission: personne.datCreat || "",
+        dateValidite: "",
+      })
+    }
+    if (personne.nifp) {
+      docs.push({
+        type: "NIFP",
+        numero: personne.nifp,
+        pays: personne.paysSiegeSocial || "",
+        lieu: personne.villeSiegeSocial || "",
+        dateEmission: personne.datCreat || "",
+        dateValidite: "",
+      })
+    }
+    return docs
+  }, [personne])
+
   const timelineSteps = stepLabels.map((label, idx) => ({
     label,
     state: idx < currentStep ? "complete" : idx === currentStep ? "active" : "pending",
     hasError: validationIndicators[idx] === "error",
     hasSuccess: validationIndicators[idx] === "success",
   }))
+
+  const emptyState = !personne
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
@@ -107,40 +190,49 @@ export default function PersonneMoraleDetail() {
             <StepTimeline steps={timelineSteps} />
           </div>
 
-          {currentStep === 0 ? (
+          {emptyState ? (
+            <div className="rounded-lg border border-slate-200 bg-white px-4 py-6 shadow-sm text-sm text-slate-700">
+              Aucune donnée chargée pour cette personne morale. Retournez à la liste et ouvrez à nouveau le détail.
+            </div>
+          ) : currentStep === 0 ? (
             <>
-              <SectionCard title="Références légales" error="Champs obligatoires manquants">
+              <SectionCard title="Références légales" error={!personne ? "Données manquantes" : undefined}>
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Nature du client" required error="Ce champ peut prendre les valeurs 0 ou 1" />
-                  <Field label="RCCM / Registre du commerce" value="GN-KAL-2024-001" success />
-                  <Field label="N° identification fiscale" value="NIF-2024-9988" />
-                  <Field label="Date de constitution" value="2010-03-12" success />
+                  <Field label="Nature du client" value={personne?.natClient} required />
+                  <Field label="Nature déclaration" value={personne?.natDec} />
+                  <Field label="Id interne client" value={personne?.idInterneClt} />
+                  <Field label="Date de constitution" value={personne?.datCreat} />
+                  <Field label="Date de création participant" value={personne?.datCreaPart} />
+                  <Field label="Statut" value={personne?.statut} />
+                  <Field label="Situation bancaire" value={personne?.sitBancaire} />
+                  <Field label="Secteur institution" value={personne?.sectInst} />
+                  <Field label="RCCM / Registre du commerce" value={personne?.rccm} />
+                  <Field label="N° identification fiscale" value={personne?.nifp} />
                 </div>
               </SectionCard>
 
-              <SectionCard title="Identité de la société" error="Champs obligatoires manquants">
+              <SectionCard title="Identité de la société" error={!personne ? "Données manquantes" : undefined}>
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Raison sociale" value="Société Minière Kankou" required success />
-                  <Field label="Sigle" value="SMK" />
-                  <Field label="Forme juridique" value="SA" required />
-                  <Field label="Secteur d’activité" value="Mines" />
-                  <Field label="Pays d’immatriculation" value="GN" required />
-                  <Field label="Pays d’activité principale" value="GN" />
-                  <Field label="Statut juridique" value="Privée" />
-                  <Field label="Capital social" value="5 000 000 000" />
+                  <Field label="Raison sociale" value={personne?.denomSocial} required />
+                  <Field label="Forme juridique" value={personne?.formeJuridique} />
+                  <Field label="Activité économique" value={personne?.actEcon} />
+                  <Field label="Pays du siège" value={personne?.paysSiegeSocial} />
+                  <Field label="Ville du siège" value={personne?.villeSiegeSocial} />
+                  <Field label="Résident" value={personne?.resident} />
+                  <Field label="Nature client" value={personne?.natClient} />
+                  <Field label="Nature déclaration" value={personne?.natDec} />
                 </div>
               </SectionCard>
 
-              <SectionCard title="Adresse et contacts" error="Champs obligatoires manquants">
+              <SectionCard title="Adresse et contacts" error={!personne ? "Données manquantes" : undefined}>
                 <div className="grid gap-3 md:grid-cols-5">
-                  <Field label="Téléphone siège" value="+224620000001" required error="10/12/14 suivi de 9 chiffres ou +224 suivi de 9 chiffres" />
-                  <Field label="Email" value="contact@smk.gn" required />
-                  <Field label="Site web" value="www.smk.gn" />
-                  <Field label="Pays de résidence" value="GN" />
-                  <Field label="Ville" value="Conakry" />
-                  <Field label="Adresse" value="Kaloum, Avenue de la République" />
-                  <Field label="Code postal" required error="Champ obligatoire manquant" />
-                  <Field label="Contact principal" value="Mamadou Bah" />
+                  <Field label="Téléphone siège" value={personne?.mobile} />
+                  <Field label="Email" value={personne?.email} />
+                  <Field label="Adresse" value={personne?.adress} />
+                  <Field label="Code postal" value={personne?.codePostal} />
+                  <Field label="Pays" value={personne?.paysSiegeSocial} />
+                  <Field label="Ville" value={personne?.villeSiegeSocial} />
+                  <Field label="Résident" value={personne?.resident} />
                 </div>
               </SectionCard>
             </>
@@ -179,16 +271,24 @@ export default function PersonneMoraleDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {documentsLegaux.map((piece, idx) => (
-                      <tr key={piece.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
-                        <td className="px-3 py-2">{piece.type}</td>
-                        <td className="px-3 py-2">{piece.numero}</td>
-                        <td className="px-3 py-2">{piece.pays}</td>
-                        <td className="px-3 py-2">{piece.lieu}</td>
-                        <td className="px-3 py-2">{piece.dateEmission}</td>
-                        <td className="px-3 py-2">{piece.dateValidite}</td>
+                    {documentsLegaux.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-3 py-4 text-center text-slate-500">
+                          Aucun document disponible
+                        </td>
                       </tr>
-                    ))}
+                    ) : (
+                      documentsLegaux.map((piece, idx) => (
+                        <tr key={piece.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+                          <td className="px-3 py-2">{piece.type}</td>
+                          <td className="px-3 py-2">{piece.numero}</td>
+                          <td className="px-3 py-2">{piece.pays}</td>
+                          <td className="px-3 py-2">{piece.lieu}</td>
+                          <td className="px-3 py-2">{piece.dateEmission}</td>
+                          <td className="px-3 py-2">{piece.dateValidite}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -228,16 +328,27 @@ export default function PersonneMoraleDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {comptesAssocies.map((compte, idx) => (
-                      <tr key={compte.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
-                        <td className="px-3 py-2">{idx + 1}</td>
-                        <td className="px-3 py-2">{compte.agence}</td>
-                        <td className="px-3 py-2">{compte.type}</td>
-                        <td className="px-3 py-2">{compte.numero}</td>
-                        <td className="px-3 py-2">{compte.cleRib}</td>
-                        <td className="px-3 py-2">{compte.statut}</td>
+                    {personne?.compteAssocie?.length ? (
+                      personne.compteAssocie.map((compte, idx) => (
+                        <tr
+                          key={`${compte.codAgce}-${compte.numCpt}-${idx}`}
+                          className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
+                        >
+                          <td className="px-3 py-2">{idx + 1}</td>
+                          <td className="px-3 py-2">{compte.codAgce}</td>
+                          <td className="px-3 py-2">-</td>
+                          <td className="px-3 py-2">{compte.numCpt}</td>
+                          <td className="px-3 py-2">{compte.cleRib}</td>
+                          <td className="px-3 py-2">{compte.statCpt}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-3 py-4 text-center text-slate-500">
+                          Aucun compte associé
+                        </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 
@@ -61,9 +61,13 @@ const DashboardSection = ({
 )
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
-  )
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSidebarOpen(window.matchMedia("(min-width: 768px)").matches)
+    }
+  }, [])
 
   const handleToggleSidebar = () => setSidebarOpen((prev) => !prev)
 
