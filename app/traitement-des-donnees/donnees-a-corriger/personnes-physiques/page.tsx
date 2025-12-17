@@ -31,7 +31,6 @@ export default function PersonnesPhysiquesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
-  const [isCardOpen, setIsCardOpen] = useState(true)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -154,18 +153,6 @@ export default function PersonnesPhysiquesPage() {
 
           {/* Collapsible Card */}
           <div className="mb-6 rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
-            {/* <button
-              // onClick={() => setIsCardOpen(!isCardOpen)}
-              className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
-            >
-              <h2 className="text-base font-semibold text-slate-800">Filtres et options</h2>
-              {/* <FiChevronDown
-                size={20}
-                className={`text-slate-600 transition-transform duration-300 ${isCardOpen ? "rotate-180" : ""}`}
-              /> 
-            </button> */}
-
-            {isCardOpen && (
               <div className="border-t border-slate-200 px-6 py-6 bg-slate-50">
                 <div className="flex items-center justify-center">
                   <div className="w-6/12 flex gap-4 items-center">
@@ -239,7 +226,6 @@ export default function PersonnesPhysiquesPage() {
                   </button>
                 </div>
               </div>
-            )}
           </div>
 
           {/* Warning Message */}
@@ -268,7 +254,6 @@ export default function PersonnesPhysiquesPage() {
               <thead className="bg-slate-50">
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
                   <th className="w-12 px-3 py-2"></th>
-                  {/* <th className="w-12 px-3 py-2"></th> */}
                   <th className="w-12 px-3 py-2">N°</th>
                   <th className="w-28 px-3 py-2">Nature client</th>
                   <th className="w-28 px-3 py-2">Identifiant</th>
@@ -315,9 +300,6 @@ export default function PersonnesPhysiquesPage() {
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
-                      {/* <td className="px-3 py-2">
-                        <input type="checkbox" className="checkbox checkbox-sm" />
-                      </td> */}
                       <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
                       <td className="px-3 py-2">{personne.natureClient}</td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
@@ -335,11 +317,6 @@ export default function PersonnesPhysiquesPage() {
             </table>
           </div>
 
-          {/* <div className="mt-6 flex items-center justify-center">
-            <button className="rounded-md bg-[#1E4F9B] px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm hover:bg-[#1a4587]">
-              Créer une déclaration à partir des éléments cochés
-            </button>
-          </div> */}
         </div>
       </main>
     </div>
