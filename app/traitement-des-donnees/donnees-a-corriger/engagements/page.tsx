@@ -6,31 +6,20 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
+import { HiOutlineDownload } from "react-icons/hi"
 import { fr } from "date-fns/locale"
 import "react-datepicker/dist/react-datepicker.css"
 import DatePicker from "react-datepicker"
 
 type Engagement = {
-  id: number
   reference: string
-  client: string
+  devise: string
+  periodeRemboursement: string
   montant: string
-  statut: string
-  echeance: string
+  nombreEcherance: string
 }
 
-const engagements: Engagement[] = [
-  { id: 1, reference: "ENG-2024-001", client: "Société Minière Kankou", montant: "50 000 000", statut: "À corriger", echeance: "30/04/2025" },
-  { id: 2, reference: "ENG-2024-002", client: "BTP Horizon Guinée", montant: "12 500 000", statut: "À corriger", echeance: "15/03/2025" },
-  { id: 3, reference: "ENG-2024-003", client: "Techlab Guinée", montant: "8 200 000", statut: "En attente", echeance: "12/06/2025" },
-  { id: 4, reference: "ENG-2024-004", client: "Immo Futur", montant: "25 000 000", statut: "Rejeté", echeance: "01/02/2025" },
-  { id: 5, reference: "ENG-2024-005", client: "Clinique Saint Michel", montant: "6 400 000", statut: "En attente", echeance: "22/05/2025" },
-  { id: 6, reference: "ENG-2024-006", client: "Translog Express", montant: "18 750 000", statut: "À corriger", echeance: "30/07/2025" },
-  { id: 7, reference: "ENG-2024-007", client: "Holding Koumba", montant: "40 000 000", statut: "À corriger", echeance: "18/09/2025" },
-  { id: 8, reference: "ENG-2024-008", client: "Agro-Export Mandiana", montant: "9 900 000", statut: "En attente", echeance: "05/11/2025" },
-  { id: 9, reference: "ENG-2024-009", client: "Kadiatou Traoré", montant: "2 500 000", statut: "À corriger", echeance: "01/08/2025" },
-  { id: 10, reference: "ENG-2024-010", client: "Alpha Diallo", montant: "3 200 000", statut: "Rejeté", echeance: "19/10/2025" },
-]
+
 
 export default function EngagementsPage() {
 
@@ -43,6 +32,8 @@ export default function EngagementsPage() {
     rejetees: 0,
     validees: 0,
   })
+  const [engagements, setEngagements] = useState<Engagement[]>([])
+  const [countLines, setCountLines] = useState(0)
 
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
@@ -50,26 +41,27 @@ export default function EngagementsPage() {
   const router = useRouter()
 
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
+    const response = await fetch(`http://10.0.16.4:8081/declaration/engagements?date=${date}`)
 
     const data = await response.text()
 
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(data, "text/xml");
-    const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
+    const personnesElements = xmlDoc.querySelectorAll("Engagement");
     const mapped = Array.from(personnesElements).map(el => ({
-      id: parseInt(el.getAttribute("IdInterneClt") || "0"),
-      natureClient: parseInt(el.getAttribute("NatClient") || "0"),
-      identifiant: el.getAttribute("NumSecSoc") || "",
-      nom: el.getAttribute("NomNaiClt") || "",
-      prenom: el.getAttribute("PrenomClt") || "",
-      sexe: el.getAttribute("Sexe") || "",
-      dateNaissance: el.getAttribute("DatNai") || "",
-      lieuNaissance: el.getAttribute("VilleNai") || "",
-      paysNaissance: el.getAttribute("PaysNai") || "",
-      adresse: el.getAttribute("Adress") || "",
+      reference: el.getAttribute("RefIntEng") || "XXXXXXX",
+      // client: el.getAttribute("NatClient") || "0",
+      montant: el.getAttribute("MntEng") || "",
+      devise: el.getAttribute("CodDev") || "",
+      periodeRemboursement: el.getAttribute("PeriodRemb") || "",
+      nombreEcherance: el.getAttribute("NbrEch") || "",
+      // dateNaissance: el.getAttribute("DatNai") || "",
+      // lieuNaissance: el.getAttribute("VilleNai") || "",
+      // paysNaissance: el.getAttribute("PaysNai") || "",
+      // adresse: el.getAttribute("Adress") || "",
+
     }));
-    setPersonnes(mapped);
+    setEngagements(mapped);
     setCountLines(mapped.length);
     return mapped.length;
   }
@@ -91,7 +83,7 @@ export default function EngagementsPage() {
     setIsLoading(true)
     setHasSearched(false)
     // Vider les personnes et réinitialiser les statistiques à 0 pendant la recherche
-    setPersonnes([])
+    setEngagements([])
     setStatistics({
       total: 0,
       enAttente: 0,
@@ -117,22 +109,22 @@ export default function EngagementsPage() {
   }
 
   const handleExport = () => {
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-      <data>
-        <declaration>
-    ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
-        </declaration>
-      </data>
-    </Response>`;
+  //   const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  //   <Response>
+  //     <data>
+  //       <declaration>
+  //   ${engagements.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
+  //       </declaration>
+  //     </data>
+  //   </Response>`;
 
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'personnes.xml';
-    a.click();
-    URL.revokeObjectURL(url);
+  //   const blob = new Blob([xml], { type: 'application/xml' });
+  //   const url = URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'personnes.xml';
+  //   a.click();
+  //   URL.revokeObjectURL(url);
   }
 
 
@@ -261,15 +253,15 @@ export default function EngagementsPage() {
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
                   <th className="w-12 px-3 py-2"></th>
                   <th className="w-12 px-3 py-2">N°</th>
-                  <th className="w-28 px-3 py-2">Nature client</th>
-                  <th className="w-28 px-3 py-2">Identifiant</th>
-                  <th className="px-3 py-2">Nom</th>
-                  <th className="px-3 py-2">Prénom</th>
-                  <th className="w-20 px-3 py-2">Sexe</th>
-                  <th className="w-32 px-3 py-2">Date de naissance</th>
+                  <th className="w-28 px-3 py-2">reference</th>
+                  <th className="w-28 px-3 py-2">montant</th>
+                  <th className="px-3 py-2">devise</th>
+                  <th className="px-3 py-2">nombre d'echerance</th>
+                  <th className="w-20 px-3 py-2">periode de remboursement</th>
+                  {/* <th className="w-32 px-3 py-2">Date de naissance</th>
                   <th className="px-3 py-2">Lieu de naissance</th>
                   <th className="px-3 py-2">Pays de naissance</th>
-                  <th className="px-3 py-2">Adresse</th>
+                  <th className="px-3 py-2">Adresse</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -285,37 +277,38 @@ export default function EngagementsPage() {
                       </div>
                     </td>
                   </tr>
-                ) : personnes.length === 0 ? (
+                ) : engagements.length === 0 ? (
                   <tr>
                     <td colSpan={11} className="px-3 py-8 text-center text-slate-500">
                       Aucune donnée disponible
                     </td>
                   </tr>
                 ) : (
-                  personnes.map((personne, idx) => (
+                  engagements.map((Engagement, idx) => (
                     <tr
-                      key={personne.id}
+                      key={Engagement.reference}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
                     >
                       <td className="px-3 py-2 text-center text-slate-500">
                         <button
                           type="button"
-                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
+                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${Engagement.reference}`)}
                           className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
                         >
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
-                      <td className="px-3 py-2">{personne.natureClient}</td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
-                      <td className="px-3 py-2">{personne.nom}</td>
-                      <td className="px-3 py-2">{personne.prenom}</td>
-                      <td className="px-3 py-2">{personne.sexe}</td>
-                      <td className="px-3 py-2">{personne.dateNaissance}</td>
-                      <td className="px-3 py-2">{personne.lieuNaissance}</td>
-                      <td className="px-3 py-2">{personne.paysNaissance}</td>
-                      <td className="px-3 py-2">{personne.adresse}</td>
+                      <td className="px-3 py-2">{Engagement.reference}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{Engagement.montant}</td>
+                      <td className="px-3 py-2">{Engagement.devise}</td>
+                      <td className="px-3 py-2">{Engagement.nombreEcherance}</td>
+                      <td className="px-3 py-2">{Engagement.periodeRemboursement}</td>
+                      {/* <td className="px-3 py-2">{Engagement.sexe}</td>
+                      <td className="px-3 py-2">{Engagement.dateNaissance}</td>
+                      <td className="px-3 py-2">{Engagement.lieuNaissance}</td>
+                      <td className="px-3 py-2">{Engagement.paysNaissance}</td>
+                      <td className="px-3 py-2">{Engagement.adresse}</td> */}
                     </tr>
                   ))
                 )}
