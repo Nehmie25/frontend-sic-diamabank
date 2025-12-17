@@ -80,6 +80,15 @@ export default function PersonnesPhysiquesPage() {
   const [personnes, setPersonnes] = useState<PersonnePhysique[]>([])
   const router = useRouter()
   const [countLines, setCountLines] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  // useEffect pour initialiser le sidebar depuis le client seulement
+  useEffect(() => {
+    const isLargeScreen = window.matchMedia("(min-width: 768px)").matches
+    setSidebarOpen(isLargeScreen)
+  }, [])
 
   // useEffect pour charger et persister la date
   useEffect(() => {
@@ -275,6 +284,32 @@ export default function PersonnesPhysiquesPage() {
     URL.revokeObjectURL(url);
   }
 
+  // Fonction pour filtrer les données
+  const filteredPersonnes = personnes.filter(personne => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      personne.nom.toLowerCase().includes(searchLower) ||
+      personne.prenom.toLowerCase().includes(searchLower) ||
+      personne.identifiant.toLowerCase().includes(searchLower) ||
+      personne.adresse.toLowerCase().includes(searchLower) ||
+      personne.lieuNaissance.toLowerCase().includes(searchLower) ||
+      personne.paysNaissance.toLowerCase().includes(searchLower)  ||
+      personne.sexe.toLowerCase().includes(searchLower)
+
+    );
+  });
+
+  // Calcul de la pagination
+  const totalPages = Math.ceil(filteredPersonnes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedPersonnes = filteredPersonnes.slice(startIndex, endIndex);
+
+  // Réinitialiser la page quand la recherche change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
       <aside className="fixed left-0 top-0 h-full">
@@ -388,6 +423,8 @@ export default function PersonnesPhysiquesPage() {
               <input
                 type="text"
                 placeholder="Rechercher"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               />
               <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -424,14 +461,14 @@ export default function PersonnesPhysiquesPage() {
                       </div>
                     </td>
                   </tr>
-                ) : personnes.length === 0 ? (
+                ) : filteredPersonnes.length === 0 ? (
                   <tr>
                     <td colSpan={11} className="px-3 py-8 text-center text-slate-500">
-                      Aucune donnée disponible
+                      {searchTerm ? "Aucun résultat trouvé" : "Aucune donnée disponible"}
                     </td>
                   </tr>
                 ) : (
-                  personnes.map((personne, idx) => (
+                  paginatedPersonnes.map((personne, idx) => (
                     <tr
                       key={personne.id}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
@@ -449,7 +486,7 @@ export default function PersonnesPhysiquesPage() {
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{startIndex + idx + 1}</td>
                       <td className="px-3 py-2">{personne.natureClient}</td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{personne.identifiant}</td>
                       <td className="px-3 py-2">{personne.nom}</td>
@@ -465,6 +502,48 @@ export default function PersonnesPhysiquesPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-slate-600">
+                Affichage {startIndex + 1} à {Math.min(endIndex, filteredPersonnes.length)} sur {filteredPersonnes.length} résultats
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Précédent
+                </button>
+                
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
+                        currentPage === page
+                          ? "bg-[#1E4F9B] text-white"
+                          : "bg-slate-200 text-slate-800 hover:bg-slate-300"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Suivant
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </main>
