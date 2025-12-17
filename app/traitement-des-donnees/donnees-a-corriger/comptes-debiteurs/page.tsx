@@ -39,6 +39,13 @@ export default function ComptesDebiteursPage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [comptes, setComptes] = useState<CompteDebiteur[]>([])
+  const [declarationInfo, setDeclarationInfo] = useState({
+    numDec: '',
+    partEmtr: '',
+    typDec: '',
+    nbrDec: '',
+    dateDec: '',
+  });
   const [statistics, setStatistics] = useState({
     total: 0,
     enAttente: 0,
@@ -58,6 +65,20 @@ export default function ComptesDebiteursPage() {
 
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(data, "text/xml");
+    const declaration = xmlDoc.querySelector("declaration");
+    
+    // Récupérer les attributs de la déclaration
+    if (declaration) {
+      const declarationData = {
+        numDec: declaration.getAttribute("NumDec") || "",
+        partEmtr: declaration.getAttribute("PartEmtr") || "",
+        typDec: declaration.getAttribute("TypDec") || "",
+        nbrDec: declaration.getAttribute("NbrDec") || "",
+        dateDec: declaration.getAttribute("DateDec") || "",
+      };
+      setDeclarationInfo(declarationData);
+    }
+
     const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
     const mapped = Array.from(personnesElements).map(el => ({
       id: parseInt(el.getAttribute("IdInterneClt") || "0"),
@@ -71,8 +92,7 @@ export default function ComptesDebiteursPage() {
       paysNaissance: el.getAttribute("PaysNai") || "",
       adresse: el.getAttribute("Adress") || "",
     }));
-    // setPersonnes(mapped);
-    // setCountLines(mapped.length);
+    setComptes([]);
     return mapped.length;
   }
 
@@ -274,7 +294,7 @@ export default function ComptesDebiteursPage() {
                   <th className="px-3 py-2">Adresse</th>
                 </tr>
               </thead>
-              {/* <tbody>
+              <tbody>
                 {isLoading ? (
                   <tr>
                     <td colSpan={11} className="px-3 py-8 text-center">
@@ -287,19 +307,19 @@ export default function ComptesDebiteursPage() {
                       </div>
                     </td>
                   </tr>
-                ) : personnes.length === 0 ? (
+                ) : comptes.length === 0 ? (
                   <tr>
                     <td colSpan={11} className="px-3 py-8 text-center text-slate-500">
                       Aucune donnée disponible
                     </td>
                   </tr>
                 ) : (
-                  personnes.map((personne, idx) => (
+                  comptes.map((compte, idx) => (
                     <tr
-                      key={personne.id}
+                      key={compte.id}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
                     >
-                      <td className="px-3 py-2 text-center text-slate-500">
+                      {/* <td className="px-3 py-2 text-center text-slate-500">
                         <button
                           type="button"
                           onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
@@ -317,11 +337,11 @@ export default function ComptesDebiteursPage() {
                       <td className="px-3 py-2">{personne.dateNaissance}</td>
                       <td className="px-3 py-2">{personne.lieuNaissance}</td>
                       <td className="px-3 py-2">{personne.paysNaissance}</td>
-                      <td className="px-3 py-2">{personne.adresse}</td>
+                      <td className="px-3 py-2">{personne.adresse}</td> */}
                     </tr>
                   ))
                 )}
-              </tbody> */}
+              </tbody>
             </table>
           </div>
 

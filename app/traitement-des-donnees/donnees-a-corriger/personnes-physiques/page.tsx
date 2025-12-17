@@ -258,13 +258,13 @@ export default function PersonnesPhysiquesPage() {
 
   const handleExport = () => {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-      <data>
-        <declaration>
-    ${personnes.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
-        </declaration>
-      </data>
-    </Response>`;
+    <declaration>
+    ${personnes.map(p => `      <PersonnePhysique NatDec="${p.natDec || ''}" NatClient="${p.natureClient}" IdInterneClt="${p.id}" DatCreaPart="${p.datCreaPart || ''}" NomNaiClt="${p.nomNaiClt || ''}" PrenomClt="${p.prenomClt || ''}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" EtatCivil="${p.etatCivil || ''}" NomPere="${p.nomPere || ''}" PrenomPere="${p.prenomPere || ''}" NomNaiMere="${p.nomNaiMere || ''}" PrmMre="${p.prmMre || ''}" VilleNai="${p.villeNai || ''}" PaysNai="${p.paysNaissance}" NatClt="${p.natClt || ''}" Resident="${p.resident || ''}" PaysRes="${p.paysRes || ''}" Mobile="${p.mobile || ''}" Adress="${p.adresse}" CommuneAdress="${p.communeAdress || ''}" SectInst="${p.sectInst || ''}" NumSecSoc="${p.identifiant}" STutelle="${p.sTutelle || ''}" StatutClt="${p.statutClt || ''}" SitBancaire="${p.sitBancaire || ''}">
+    ${p.compteAssocie?.map(c => `        <CompteAssocie CodAgce="${c.codAgce}" NumCpt="${c.numCpt}" CleRib="${c.cleRib}" TypCpt="${c.typCpt}" StatCpt="${c.statCpt}"></CompteAssocie>`).join('\n') || ''}
+    ${p.piece?.map(pi => `        <Piece TypPiece="${pi.typPiece}" NumPiece="${pi.numPiece}" DatEmiPiece="${pi.datEmiPiece}" LieuEmiPiece="${pi.lieuEmiPiece}" PaysEmiPiece="${pi.paysEmiPiece}" FinValPiece="${pi.finValPiece}"></Piece>`).join('\n') || ''}
+    </PersonnePhysique>`).join('\n')}
+    </declaration>
+    `;
 
     const blob = new Blob([xml], { type: 'application/xml' });
     const url = URL.createObjectURL(blob);
@@ -359,9 +359,9 @@ export default function PersonnesPhysiquesPage() {
                 <div className="mt-6 flex justify-center">
                   <button 
                     onClick={handleExport}
-                    disabled={!hasSearched}
+                    disabled={personnes.length < 1}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                      hasSearched
+                      personnes.length > 0
                         ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
                         : "bg-slate-300 text-slate-500 cursor-not-allowed"
                     }`}
