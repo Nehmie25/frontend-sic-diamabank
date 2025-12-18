@@ -439,6 +439,7 @@ export default function PersonneMoraleDetail() {
                   <IoClose size={18} />
                 </button>
               </div>
+
               <div className="p-4 space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">
                   <Field label="Type de document" required error="Ce champ est obligatoire" />
@@ -448,6 +449,7 @@ export default function PersonneMoraleDetail() {
                   <Field label="Date d’émission" required error="Ce champ est obligatoire" />
                   <Field label="Date de validité" required error="Ce champ est obligatoire" />
                 </div>
+
               </div>
               <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">
                 <button
@@ -506,6 +508,7 @@ export default function PersonneMoraleDetail() {
                 </button>
               </div>
             </div>
+
           </div>
         ) : null}
       </main>
