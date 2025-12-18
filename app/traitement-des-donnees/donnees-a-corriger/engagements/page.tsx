@@ -173,6 +173,7 @@ export default function EngagementsPage() {
         }
     });
     setEngagements(mapped);
+    console.log('Engagements récupérés :', mapped);
     setCountLines(mapped.length);
     return mapped.length;
   }
@@ -220,21 +221,6 @@ export default function EngagementsPage() {
   }
 
   const handleExport = () => {
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-    <declaration>
-    ${engagements.map(p => `      <Engagement NatDec="${p.natDec || ''}" typEve="${p.typEve}" refIntEng="${p.refIntEng || ''}" ligneParent="${p.ligneParent || ''}" typeModif="${p.typeModif || ''}" cloture="${p.cloture || ''}" dateMEP="${p.dateMEP || ''}" typEng="${p.typEng || ''}" mntEng="${p.mntEng || ''}" mntInt="${p.mntInt || ''}" codDev="${p.codDev || ''}" periodRemb="${p.periodRemb || ''}" txIntEng="${p.txIntEng || ''}" typTxInt="${p.typTxInt || ''}" txEffGlob="${p.txEffGlob || ''}" moyRemb="${p.moyRemb || ''}" typAmo="${p.typAmo || ''}" typDiffAmo="${p.typDiffAmo || ''}" mntEch="${p.mntEch || ''}" nbrEch="${p.nbrEch || ''}" datPremEch="${p.datPremEch || ''}" datFin="${p.datFin || ''}" mntFrais="${p.mntFrais || ''}" mntComm="${p.mntComm || ''}" codAgce="${p.codAgce || ''}" estRachatCreance="${p.estRachatCreance || ''}" datEvent="${p.datEvent || ''}">
-        ${Array.isArray(p.beneficiaire) ? p.beneficiaire.map(b => `          <Beneficiaire IdIntBen="${b.IdIntBen}" PourBenef = "${b.PourBenef}"> </Beneficiaire>`).join('\n') : ''}
-      </Engagement>`).join('\n')}
-    </declaration>
-    `;
-
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'engagements.xml';
-    a.click();
-    URL.revokeObjectURL(url);
   //   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   //   <Response>
   //     <data>
@@ -271,7 +257,7 @@ export default function EngagementsPage() {
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
           <div className="mb-6">
-            <h1 className="text-lg font-semibold text-slate-800">Liste des données d'engagements</h1>
+            <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques</h1>
           </div>
 
 
@@ -338,9 +324,9 @@ export default function EngagementsPage() {
                 <div className="mt-6 flex justify-center">
                   <button 
                     onClick={handleExport}
-                    disabled={engagements.length < 1}
+                    disabled={!hasSearched}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                      engagements.length > 0
+                      hasSearched
                         ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
                         : "bg-slate-300 text-slate-500 cursor-not-allowed"
                     }`}

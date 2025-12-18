@@ -171,19 +171,6 @@ export default function EncoursEngagementsPage() {
   }
 
   const handleExport = () => {
-      const xml = `<?xml version="1.0" encoding="UTF-8"?>
-    <declaration>
-    ${encoursEngagements.map(p => `      <Engagement NatDec="${p.NatDec || ''}" RefIntEng="${p.RefIntEng || ''}" CodDev="${p.CodDev || ''}" MntDerEch="${p.MntDerEch || ''}" MonPai="${p.MonPai || ''}" MntHBil="${p.MntHBil || ''}" MntRemAnt="${p.MntRemAnt || ''}" MntCRDU="${p.MntCRDU || ''}" MntCreRat="${p.MntCreRat || ''}" NbrEchPay="${p.NbrEchPay || ''}"> </Engagement>`).join('\n')}
-    </declaration>
-    `;
-
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'encoursEngagements.xml';
-    a.click();
-    URL.revokeObjectURL(url);
     // const xml = `<?xml version="1.0" encoding="UTF-8"?>
     // <Response>
     //   <data>
@@ -286,9 +273,9 @@ export default function EncoursEngagementsPage() {
                 <div className="mt-6 flex justify-center">
                   <button 
                     onClick={handleExport}
-                    disabled={encoursEngagements.length<1}
+                    disabled={!hasSearched}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                      encoursEngagements.length>0
+                      hasSearched
                         ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
                         : "bg-slate-300 text-slate-500 cursor-not-allowed"
                     }`}
