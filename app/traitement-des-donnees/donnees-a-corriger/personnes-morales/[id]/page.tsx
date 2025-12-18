@@ -431,13 +431,13 @@ export default function PersonneMoraleDetail() {
             <div className="w-full max-w-4xl rounded-lg bg-white shadow-2xl">
               <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                 <h3 className="text-sm font-semibold text-slate-800">Informations de document légal</h3>
-                <button
+                {/* <button
                   type="button"
                   onClick={() => setShowPieceModal(false)}
                   className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
                 >
                   <IoClose size={18} />
-                </button>
+                </button> */}
               </div>
               <div className="p-4 space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">
@@ -473,13 +473,13 @@ export default function PersonneMoraleDetail() {
             <div className="w-full max-w-3xl rounded-lg bg-white shadow-2xl">
               <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                 <h3 className="text-sm font-semibold text-slate-800">Informations de compte associé</h3>
-                <button
+                {/* <button
                   type="button"
                   onClick={() => setShowCompteModal(false)}
                   className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
                 >
                   <IoClose size={18} />
-                </button>
+                </button> */}
               </div>
               <div className="p-4 space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">

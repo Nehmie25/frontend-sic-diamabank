@@ -2,13 +2,13 @@
 
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
+import { fr } from "date-fns/locale"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 import { HiOutlineDownload, HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
-import "react-datepicker/dist/react-datepicker.css"
-import { fr } from "date-fns/locale"
-import DatePicker from "react-datepicker"
 
 type CompteAssocie = {
   codAgce: string
@@ -56,6 +56,9 @@ export default function PersonnesMoralesPage() {
   )
   const router = useRouter()
   const [personnes, setPersonnes] = useState<PersonneMorale[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     const savedDate = sessionStorage.getItem("pm_selectedDate")
@@ -110,6 +113,29 @@ export default function PersonnesMoralesPage() {
   useEffect(() => {
     sessionStorage.setItem("pm_hasSearched", JSON.stringify(hasSearched))
   }, [hasSearched])
+
+  // Filtrage pour la recherche texte
+  const filteredPersonnes = personnes.filter((personne) => {
+    const searchLower = searchTerm.toLowerCase()
+    return (
+      (personne.denomSocial || "").toLowerCase().includes(searchLower) ||
+      (personne.idInterneClt || "").toLowerCase().includes(searchLower) ||
+      (personne.adress || "").toLowerCase().includes(searchLower) ||
+      (personne.paysSiegeSocial || "").toLowerCase().includes(searchLower) ||
+      (personne.villeSiegeSocial || "").toLowerCase().includes(searchLower)
+    )
+  })
+
+  // Calcul de la pagination
+  const totalPages = Math.ceil(filteredPersonnes.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedPersonnes = filteredPersonnes.slice(startIndex, endIndex)
+
+  // Réinitialiser la page quand la recherche change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   const fetchDataByDate = async (date: string) => {
     const response = await fetch(`http://10.0.16.4:8081/declaration/personnemorale?date=${date}`)
@@ -198,11 +224,11 @@ export default function PersonnesMoralesPage() {
   <data>
     <declaration>
 ${personnes
-  .map(
-    (p) =>
-      `      <PersonneMorale NatDec="${p.natDec}" NatClient="${p.natClient}" IdInterneClt="${p.idInterneClt}" DenomSocial="${p.denomSocial}" DatCreat="${p.datCreat}" Statut="${p.statut}" DatCreaPart="${p.datCreaPart}" FormeJuridique="${p.formeJuridique ?? ""}" PaysSiegeSocial="${p.paysSiegeSocial ?? ""}" VilleSiegeSocial="${p.villeSiegeSocial ?? ""}" Mobile="${p.mobile ?? ""}" Adress="${p.adress ?? ""}" CodePostal="${p.codePostal ?? ""}" Resident="${p.resident ?? ""}" ActEcon="${p.actEcon ?? ""}" SectInst="${p.sectInst ?? ""}" SitBancaire="${p.sitBancaire ?? ""}" RCCM="${p.rccm ?? ""}" NIFP="${p.nifp ?? ""}" Email="${p.email ?? ""}"></PersonneMorale>`
-  )
-  .join("\n")}
+        .map(
+          (p) =>
+            `      <PersonneMorale NatDec="${p.natDec}" NatClient="${p.natClient}" IdInterneClt="${p.idInterneClt}" DenomSocial="${p.denomSocial}" DatCreat="${p.datCreat}" Statut="${p.statut}" DatCreaPart="${p.datCreaPart}" FormeJuridique="${p.formeJuridique ?? ""}" PaysSiegeSocial="${p.paysSiegeSocial ?? ""}" VilleSiegeSocial="${p.villeSiegeSocial ?? ""}" Mobile="${p.mobile ?? ""}" Adress="${p.adress ?? ""}" CodePostal="${p.codePostal ?? ""}" Resident="${p.resident ?? ""}" ActEcon="${p.actEcon ?? ""}" SectInst="${p.sectInst ?? ""}" SitBancaire="${p.sitBancaire ?? ""}" RCCM="${p.rccm ?? ""}" NIFP="${p.nifp ?? ""}" Email="${p.email ?? ""}"></PersonneMorale>`
+        )
+        .join("\n")}
     </declaration>
   </data>
 </Response>`
@@ -251,9 +277,8 @@ ${personnes
                   <button
                     onClick={handleSearch}
                     disabled={isLoading}
-                    className={`rounded-md px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors ${
-                      isLoading ? "bg-slate-400 cursor-not-allowed" : "bg-[#1E4F9B] hover:bg-[#1a4587]"
-                    }`}
+                    className={`rounded-md px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors ${isLoading ? "bg-slate-400 cursor-not-allowed" : "bg-[#1E4F9B] hover:bg-[#1a4587]"
+                      }`}
                   >
                     {isLoading ? (
                       <span className="flex items-center gap-2">
@@ -293,9 +318,8 @@ ${personnes
                 <button
                   onClick={handleExport}
                   disabled={!hasSearched}
-                  className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                    hasSearched ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer" : "bg-slate-300 text-slate-500 cursor-not-allowed"
-                  }`}
+                  className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${hasSearched ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer" : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    }`}
                 >
                   <HiOutlineDownload size={18} />
                   Exporter le fichier
@@ -318,6 +342,8 @@ ${personnes
               <input
                 type="text"
                 placeholder="Rechercher"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               />
               <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -356,14 +382,14 @@ ${personnes
                       </div>
                     </td>
                   </tr>
-                ) : personnes.length === 0 ? (
+                ) : filteredPersonnes.length === 0 ? (
                   <tr>
                     <td colSpan={13} className="px-3 py-8 text-center text-slate-500">
-                      Aucune donnée disponible
+                      {searchTerm ? "Aucun résultat trouvé" : "Aucune donnée disponible"}
                     </td>
                   </tr>
                 ) : (
-                  personnes.map((personne, idx) => (
+                  paginatedPersonnes.map((personne, idx) => (
                     <tr
                       key={`${personne.idInterneClt}-${idx}`}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
@@ -380,7 +406,7 @@ ${personnes
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{startIndex + idx + 1}</td>
                       <td className="px-3 py-2">{personne.natClient}</td>
                       <td className="px-3 py-2">{personne.natDec}</td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{personne.idInterneClt}</td>
@@ -398,6 +424,47 @@ ${personnes
               </tbody>
             </table>
           </div>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-slate-600">
+                Affichage {startIndex + 1} à {Math.min(endIndex, filteredPersonnes.length)} sur {filteredPersonnes.length} résultats
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Précédent
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors ${currentPage === page
+                        ? "bg-[#1E4F9B] text-white"
+                        : "bg-slate-200 text-slate-800 hover:bg-slate-300"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Suivant
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
     </div>
