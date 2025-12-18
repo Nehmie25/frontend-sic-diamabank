@@ -3,7 +3,7 @@
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
 import { FiChevronDown } from "react-icons/fi"
@@ -43,10 +43,68 @@ export default function EncoursEngagementsPage() {
   })
   const [encoursEngagements, setEncoursEngagements] = useState<EncoursEngagement[]>([])
   const router = useRouter()
+  useEffect(() => {
+    const savedDate = sessionStorage.getItem('selectedDateencoursengagements');
+    const savedencoursengagements = sessionStorage.getItem('encoursengagements');
+    const savedStatisticsEngagements = sessionStorage.getItem('statisticsencoursengagements');
+    const savedHasSearchedEngagements = sessionStorage.getItem('hasSearchedencoursengagements');
+    
+    if (savedDate) {
+      const date = new Date(savedDate);
+      setSelectedDate(date);
+    }
+
+    if (savedencoursengagements) {
+      try {
+        const encoursengagementsData = JSON.parse(savedencoursengagements);
+        setEncoursEngagements(encoursengagementsData);
+      } catch (error) {
+        console.error('Erreur lors du parsing des engagements encours:', error);
+        }
+    }
+  
+    if (savedStatisticsEngagements) {
+      try {
+        setStatistics(JSON.parse(savedStatisticsEngagements));
+      } catch (error) {
+        console.error('Erreur lors du parsing des statistiques:', error);
+      }
+    }
+  
+    if (savedHasSearchedEngagements) {
+      try {
+        setHasSearched(JSON.parse(savedHasSearchedEngagements));
+      } catch (error) {
+        console.error('Erreur lors du parsing de hasSearched:', error);
+      }
+    }
+  }, []);
+  useEffect(() => {
+    if (selectedDate) {
+      sessionStorage.setItem('selectedDateEngagements', selectedDate.toISOString());
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (encoursEngagements.length > 0) {
+      sessionStorage.setItem('encoursengagements', JSON.stringify(encoursEngagements));
+    }
+  }, [encoursEngagements]);
+
+  useEffect(() => {
+    if (statistics.total > 0) {
+      sessionStorage.setItem('statisticsencoursengagements', JSON.stringify(statistics));
+    }
+  }, [statistics]);
+
+  useEffect(() => {
+    sessionStorage.setItem('hasSearchedencoursengagements', JSON.stringify(hasSearched));
+  }, [hasSearched]);
+
   const [countLines, setCountLines] = useState(0);
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/encours?date=${date}`)
+    const response = await fetch(`http://10.0.16.4:8081/declaration/encoursengagements?date=${date}`)
 
     const data = await response.text()
 
@@ -287,30 +345,33 @@ export default function EncoursEngagementsPage() {
                     </td>
                   </tr>
                 ) : (
-                  encoursEngagements.map((personne, idx) => (
+                  encoursEngagements.map((encoursEngagement, idx) => (
                     <tr
-                      key={personne.id}
+                      key={encoursEngagement.id}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
                     >
                       <td className="px-3 py-2 text-center text-slate-500">
                         <button
                           type="button"
-                          onClick={() => router.push(`/traitement-des-donnees/donnees-a-corriger/personnes-physiques/${personne.id}`)}
+                          onClick={() =>{ 
+                            sessionStorage.setItem('encoursEngagementData', JSON.stringify(encoursEngagement));
+                            router.push(`/traitement-des-donnees/donnees-a-corriger/encours-engagements/${encoursEngagement.id}`)
+                          }}
                           className="flex items-center justify-center rounded-full p-2 hover:border hover:border-blue-500 hover:text-blue-600"
                         >
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
-                      <td className="px-3 py-2">{personne.NatDec}</td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{personne.RefIntEng}</td>
-                      <td className="px-3 py-2">{personne.CodDev}</td>
-                      <td className="px-3 py-2">{personne.MntDerEch}</td>
-                      <td className="px-3 py-2">{personne.MonPai}</td>
-                      <td className="px-3 py-2">{personne.MntHBil}</td>
-                      <td className="px-3 py-2">{personne.MntCRDU}</td>
-                      <td className="px-3 py-2">{personne.MntCreRat}</td>
-                      <td className="px-3 py-2">{personne.NbrEchPay}</td>
+                      <td className="px-3 py-2">{encoursEngagement.NatDec}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{encoursEngagement.RefIntEng}</td>
+                      <td className="px-3 py-2">{encoursEngagement.CodDev}</td>
+                      <td className="px-3 py-2">{encoursEngagement.MntDerEch}</td>
+                      <td className="px-3 py-2">{encoursEngagement.MonPai}</td>
+                      <td className="px-3 py-2">{encoursEngagement.MntHBil}</td>
+                      <td className="px-3 py-2">{encoursEngagement.MntCRDU}</td>
+                      <td className="px-3 py-2">{encoursEngagement.MntCreRat}</td>
+                      <td className="px-3 py-2">{encoursEngagement.NbrEchPay}</td>
                     </tr>
                   ))
                 )}
