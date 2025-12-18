@@ -114,16 +114,26 @@ export default function PersonnesMoralesPage() {
     sessionStorage.setItem("pm_hasSearched", JSON.stringify(hasSearched))
   }, [hasSearched])
 
-  // Filtrage pour la recherche texte
+  // Filtrage pour la recherche texte (insensible aux accents / espaces)
+  const normalize = (s: any = "") =>
+    String(s)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .trim()
+
+  const q = normalize(searchTerm)
+
   const filteredPersonnes = personnes.filter((personne) => {
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      (personne.denomSocial || "").toLowerCase().includes(searchLower) ||
-      (personne.idInterneClt || "").toLowerCase().includes(searchLower) ||
-      (personne.adress || "").toLowerCase().includes(searchLower) ||
-      (personne.paysSiegeSocial || "").toLowerCase().includes(searchLower) ||
-      (personne.villeSiegeSocial || "").toLowerCase().includes(searchLower)
-    )
+    if (!q) return true
+
+    return [
+      personne.denomSocial,
+      personne.idInterneClt,
+      personne.adress,
+      personne.paysSiegeSocial,
+      personne.villeSiegeSocial,
+    ].some((value) => normalize(value ?? "").includes(q))
   })
 
   // Calcul de la pagination
@@ -217,13 +227,15 @@ export default function PersonnesMoralesPage() {
   }
 
   const handleExport = () => {
-    if (!hasSearched || personnes.length === 0) return
+    // Export the currently displayed list (filtered results) so export matches the visible table
+    const toExport = filteredPersonnes.length > 0 ? filteredPersonnes : personnes
+    if (toExport.length === 0) return
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <data>
     <declaration>
-${personnes
+${toExport
         .map(
           (p) =>
             `      <PersonneMorale NatDec="${p.natDec}" NatClient="${p.natClient}" IdInterneClt="${p.idInterneClt}" DenomSocial="${p.denomSocial}" DatCreat="${p.datCreat}" Statut="${p.statut}" DatCreaPart="${p.datCreaPart}" FormeJuridique="${p.formeJuridique ?? ""}" PaysSiegeSocial="${p.paysSiegeSocial ?? ""}" VilleSiegeSocial="${p.villeSiegeSocial ?? ""}" Mobile="${p.mobile ?? ""}" Adress="${p.adress ?? ""}" CodePostal="${p.codePostal ?? ""}" Resident="${p.resident ?? ""}" ActEcon="${p.actEcon ?? ""}" SectInst="${p.sectInst ?? ""}" SitBancaire="${p.sitBancaire ?? ""}" RCCM="${p.rccm ?? ""}" NIFP="${p.nifp ?? ""}" Email="${p.email ?? ""}"></PersonneMorale>`
@@ -317,8 +329,8 @@ ${personnes
               <div className="mt-6 flex justify-center">
                 <button
                   onClick={handleExport}
-                  disabled={!hasSearched}
-                  className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${hasSearched ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer" : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                  disabled={filteredPersonnes.length === 0}
+                  className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${filteredPersonnes.length > 0 ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer" : "bg-slate-300 text-slate-500 cursor-not-allowed"
                     }`}
                 >
                   <HiOutlineDownload size={18} />
