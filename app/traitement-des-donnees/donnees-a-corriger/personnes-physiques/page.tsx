@@ -269,8 +269,8 @@ export default function PersonnesPhysiquesPage() {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
     <declaration>
     ${personnes.map(p => `      <PersonnePhysique NatDec="${p.natDec || ''}" NatClient="${p.natureClient}" IdInterneClt="${p.id}" DatCreaPart="${p.datCreaPart || ''}" NomNaiClt="${p.nomNaiClt || ''}" PrenomClt="${p.prenomClt || ''}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" EtatCivil="${p.etatCivil || ''}" NomPere="${p.nomPere || ''}" PrenomPere="${p.prenomPere || ''}" NomNaiMere="${p.nomNaiMere || ''}" PrmMre="${p.prmMre || ''}" VilleNai="${p.villeNai || ''}" PaysNai="${p.paysNaissance}" NatClt="${p.natClt || ''}" Resident="${p.resident || ''}" PaysRes="${p.paysRes || ''}" Mobile="${p.mobile || ''}" Adress="${p.adresse}" CommuneAdress="${p.communeAdress || ''}" SectInst="${p.sectInst || ''}" NumSecSoc="${p.identifiant}" STutelle="${p.sTutelle || ''}" StatutClt="${p.statutClt || ''}" SitBancaire="${p.sitBancaire || ''}">
-    ${p.compteAssocie?.map(c => `        <CompteAssocie CodAgce="${c.codAgce}" NumCpt="${c.numCpt}" CleRib="${c.cleRib}" TypCpt="${c.typCpt}" StatCpt="${c.statCpt}"></CompteAssocie>`).join('\n') || ''}
-    ${p.piece?.map(pi => `        <Piece TypPiece="${pi.typPiece}" NumPiece="${pi.numPiece}" DatEmiPiece="${pi.datEmiPiece}" LieuEmiPiece="${pi.lieuEmiPiece}" PaysEmiPiece="${pi.paysEmiPiece}" FinValPiece="${pi.finValPiece}"></Piece>`).join('\n') || ''}
+    ${p.compteAssocie?.map(c => `        <CompteAssocie CodAgce="${c.codAgce}" NumCpt="${c.numCpt}" CleRib="${c.cleRib}" TypCpt="${c.typCpt}" StatCpt="${c.statCpt}"> </CompteAssocie>`).join('\n') || ''}
+    ${p.piece?.map(pi => `        <Piece TypPiece="${pi.typPiece}" NumPiece="${pi.numPiece}" DatEmiPiece="${pi.datEmiPiece}" LieuEmiPiece="${pi.lieuEmiPiece}" PaysEmiPiece="${pi.paysEmiPiece}" FinValPiece="${pi.finValPiece}"> </Piece>`).join('\n') || ''}
     </PersonnePhysique>`).join('\n')}
     </declaration>
     `;
