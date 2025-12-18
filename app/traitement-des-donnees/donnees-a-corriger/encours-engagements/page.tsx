@@ -43,6 +43,9 @@ export default function EncoursEngagementsPage() {
   })
   const [encoursEngagements, setEncoursEngagements] = useState<EncoursEngagement[]>([])
   const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
   useEffect(() => {
     const savedDate = sessionStorage.getItem('selectedDateencoursengagements');
     const savedencoursengagements = sessionStorage.getItem('encoursengagements');
@@ -81,7 +84,7 @@ export default function EncoursEngagementsPage() {
   }, []);
   useEffect(() => {
     if (selectedDate) {
-      sessionStorage.setItem('selectedDateEngagements', selectedDate.toISOString());
+      sessionStorage.setItem('selectedDateencoursengagements', selectedDate.toISOString());
     }
   }, [selectedDate]);
 
@@ -100,6 +103,11 @@ export default function EncoursEngagementsPage() {
   useEffect(() => {
     sessionStorage.setItem('hasSearchedencoursengagements', JSON.stringify(hasSearched));
   }, [hasSearched]);
+
+  // Réinitialiser la page quand la recherche change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const [countLines, setCountLines] = useState(0);
   // Fonction pour appel api en get
@@ -171,6 +179,19 @@ export default function EncoursEngagementsPage() {
   }
 
   const handleExport = () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+     <declaration>
+    ${encoursEngagements.map(p => `      <Engagement IdInterneClt="${p.id || ''}" NatDec="${p.NatDec || ''}" RefIntEng="${p.RefIntEng || ''}" CodDev="${p.CodDev || ''}" MntDerEch="${p.MntDerEch || ''}" MonPai="${p.MonPai || ''}" MntHBil="${p.MntHBil || ''}" MntRemAnt="${p.MntRemAnt || ''}" MntCRDU="${p.MntCRDU || ''}" MntCreRat="${p.MntCreRat || ''}" NbrEchPay="${p.NbrEchPay || ''}"></Engagement>`).join('\n')}
+    </declaration>
+    `;
+
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'encoursEngagements.xml';
+    a.click();
+    URL.revokeObjectURL(url);
     // const xml = `<?xml version="1.0" encoding="UTF-8"?>
     // <Response>
     //   <data>
@@ -188,6 +209,24 @@ export default function EncoursEngagementsPage() {
     // a.click();
     // URL.revokeObjectURL(url);
   }
+
+  // Fonction pour filtrer les données
+  const filteredEncoursEngagements = encoursEngagements.filter(encours => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      encours.RefIntEng.toLowerCase().includes(searchLower) ||
+      encours.CodDev.toLowerCase().includes(searchLower) ||
+      encours.MntDerEch.toLowerCase().includes(searchLower) ||
+      encours.MonPai.toLowerCase().includes(searchLower) ||
+      encours.NbrEchPay.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Calcul de la pagination
+  const totalPages = Math.ceil(filteredEncoursEngagements.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEncoursEngagements = filteredEncoursEngagements.slice(startIndex, endIndex);
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
@@ -273,9 +312,9 @@ export default function EncoursEngagementsPage() {
                 <div className="mt-6 flex justify-center">
                   <button 
                     onClick={handleExport}
-                    disabled={!hasSearched}
+                    disabled={encoursEngagements.length < 1}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                      hasSearched
+                      encoursEngagements.length > 0
                         ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
                         : "bg-slate-300 text-slate-500 cursor-not-allowed"
                     }`}
@@ -302,6 +341,8 @@ export default function EncoursEngagementsPage() {
               <input
                 type="text"
                 placeholder="Rechercher"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               />
               <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -338,14 +379,14 @@ export default function EncoursEngagementsPage() {
                       </div>
                     </td>
                   </tr>
-                ) : encoursEngagements.length === 0 ? (
+                ) : filteredEncoursEngagements.length === 0 ? (
                   <tr>
                     <td colSpan={11} className="px-3 py-8 text-center text-slate-500">
-                      Aucune donnée disponible
+                      {searchTerm ? "Aucun résultat trouvé" : "Aucune donnée disponible"}
                     </td>
                   </tr>
                 ) : (
-                  encoursEngagements.map((encoursEngagement, idx) => (
+                  paginatedEncoursEngagements.map((encoursEngagement, idx) => (
                     <tr
                       key={encoursEngagement.id}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
@@ -362,7 +403,7 @@ export default function EncoursEngagementsPage() {
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{startIndex + idx + 1}</td>
                       <td className="px-3 py-2">{encoursEngagement.NatDec}</td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{encoursEngagement.RefIntEng}</td>
                       <td className="px-3 py-2">{encoursEngagement.CodDev}</td>
@@ -378,6 +419,48 @@ export default function EncoursEngagementsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-slate-600">
+                Affichage {startIndex + 1} à {Math.min(endIndex, filteredEncoursEngagements.length)} sur {filteredEncoursEngagements.length} résultats
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Précédent
+                </button>
+                
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
+                        currentPage === page
+                          ? "bg-[#1E4F9B] text-white"
+                          : "bg-slate-200 text-slate-800 hover:bg-slate-300"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Suivant
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </main>

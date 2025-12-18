@@ -60,7 +60,10 @@ export default function EngagementsPage() {
     validees: 0,
   })
   const [engagements, setEngagements] = useState<Engagement[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
   const [countLines, setCountLines] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
@@ -125,6 +128,10 @@ export default function EngagementsPage() {
   useEffect(() => {
     sessionStorage.setItem('hasSearchedEngagements', JSON.stringify(hasSearched));
   }, [hasSearched]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const fetchDataByDate = async (date: string) => {
     const response = await fetch(`http://10.0.16.4:8081/declaration/engagements?date=${date}`)
@@ -221,24 +228,38 @@ export default function EngagementsPage() {
   }
 
   const handleExport = () => {
-  //   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-  //   <Response>
-  //     <data>
-  //       <declaration>
-  //   ${engagements.map(p => `      <PersonnePhysique IdInterneClt="${p.id}" NatClient="${p.natureClient}" NumSecSoc="${p.identifiant}" NomNaiClt="${p.nom}" PrenomClt="${p.prenom}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" VilleNai="${p.lieuNaissance}" PaysNai="${p.paysNaissance}" Adress="${p.adresse}"></PersonnePhysique>`).join('\n')}
-  //       </declaration>
-  //     </data>
-  //   </Response>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+     <declaration>
+    ${engagements.map(p => `      <Engagement NatDec="${p.natDec || ''}" TypEve="${p.typEve || ''}" RefIntEng="${p.refIntEng || ''}" LigneParent="${p.ligneParent || ''}" TypeModif="${p.typeModif || ''}" Cloture="${p.cloture || ''}" DateMEP="${p.dateMEP || ''}" TypEng="${p.typEng || ''}" MntEng="${p.mntEng || ''}" MntInt="${p.mntInt || ''}" CodDev="${p.codDev || ''}" PeriodRemb="${p.periodRemb || ''}" TxIntEng="${p.txIntEng || ''}" TypTxInt="${p.typTxInt || ''}" TxEffGlob="${p.txEffGlob || ''}" MoyRemb="${p.moyRemb || ''}" TypAmo="${p.typAmo || ''}" TypDiffAmo="${p.typDiffAmo || ''}" MntEch="${p.mntEch || ''}" NbrEch="${p.nbrEch || ''}" DatPremEch="${p.datPremEch || ''}" DatFin="${p.datFin || ''}" MntFrais="${p.mntFrais || ''}" MntComm="${p.mntComm || ''}" CodAgce="${p.codAgce || ''}"></Engagement>`).join('\n')}
+    </declaration>
+    `;
 
-  //   const blob = new Blob([xml], { type: 'application/xml' });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement('a');
-  //   a.href = url;
-  //   a.download = 'personnes.xml';
-  //   a.click();
-  //   URL.revokeObjectURL(url);
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'engagements.xml';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
+    const filteredEngagement = engagements.filter(engagement => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      engagement.refIntEng.toLowerCase().includes(searchLower) ||
+      engagement.mntEng.toLowerCase().includes(searchLower) ||
+      engagement.mntInt.toLowerCase().includes(searchLower) ||
+      engagement.codDev.toLowerCase().includes(searchLower) ||
+      engagement.nbrEch.toLowerCase().includes(searchLower) ||
+      engagement.datFin.toLowerCase().includes(searchLower) ||
+      engagement.periodRemb.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredEngagement.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEngagement = filteredEngagement.slice(startIndex, endIndex);
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
@@ -324,9 +345,9 @@ export default function EngagementsPage() {
                 <div className="mt-6 flex justify-center">
                   <button 
                     onClick={handleExport}
-                    disabled={!hasSearched}
+                    disabled={engagements.length<1}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                      hasSearched
+                      engagements.length>0
                         ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
                         : "bg-slate-300 text-slate-500 cursor-not-allowed"
                     }`}
@@ -353,6 +374,8 @@ export default function EngagementsPage() {
               <input
                 type="text"
                 placeholder="Rechercher"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               />
               <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -398,7 +421,7 @@ export default function EngagementsPage() {
                     </td>
                   </tr>
                 ) : (
-                  engagements.map((Engagement, idx) => (
+                  paginatedEngagement.map((Engagement, idx) => (
                     <tr
                       key={Engagement.refIntEng}
                       className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}
@@ -415,7 +438,7 @@ export default function EngagementsPage() {
                           <MdOutlineZoomIn size={18} />
                         </button>
                       </td>
-                      <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{startIndex + idx + 1}</td>
                       <td className="px-3 py-2">{Engagement.refIntEng}</td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{Engagement.mntEng}</td>
                       <td className="px-3 py-2">{Engagement.mntInt}</td>
@@ -434,7 +457,47 @@ export default function EngagementsPage() {
               </tbody>
             </table>
           </div>
-
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-slate-600">
+                Affichage {startIndex + 1} à {Math.min(endIndex, filteredEngagement.length)} sur {filteredEngagement.length} résultats
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Précédent
+                </button>
+                
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
+                        currentPage === page
+                          ? "bg-[#1E4F9B] text-white"
+                          : "bg-slate-200 text-slate-800 hover:bg-slate-300"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
+                >
+                  Suivant
+                </button>
+              </div>
+            </div>
+          )}
+          
         </div>
       </main>
     </div>
