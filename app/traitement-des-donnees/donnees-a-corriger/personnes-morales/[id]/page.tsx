@@ -506,6 +506,7 @@ export default function PersonneMoraleDetail() {
                 </button>
               </div>
             </div>
+            
           </div>
         ) : null}
       </main>
