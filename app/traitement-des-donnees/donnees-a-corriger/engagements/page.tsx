@@ -367,8 +367,10 @@ export default function EngagementsPage() {
                   <th className="w-12 px-3 py-2">N°</th>
                   <th className="w-28 px-3 py-2">reference</th>
                   <th className="w-28 px-3 py-2">montant</th>
+                  <th className="w-28 px-3 py-2">montant totale interet</th>
                   <th className="px-3 py-2">devise</th>
                   <th className="px-3 py-2">nombre d'echerance</th>
+                  <th className="px-3 py-2">date de fin</th>
                   <th className="w-20 px-3 py-2">periode de remboursement</th>
                   {/* <th className="w-32 px-3 py-2">Date de naissance</th>
                   <th className="px-3 py-2">Lieu de naissance</th>
@@ -416,8 +418,10 @@ export default function EngagementsPage() {
                       <td className="px-3 py-2 font-semibold text-slate-700">{idx + 1}</td>
                       <td className="px-3 py-2">{Engagement.refIntEng}</td>
                       <td className="px-3 py-2 font-semibold text-slate-700">{Engagement.mntEng}</td>
+                      <td className="px-3 py-2">{Engagement.mntInt}</td>
                       <td className="px-3 py-2">{Engagement.codDev}</td>
                       <td className="px-3 py-2">{Engagement.nbrEch}</td>
+                      <td className="px-3 py-2">{Engagement.datFin}</td>
                       <td className="px-3 py-2">{Engagement.periodRemb}</td>
                       {/* <td className="px-3 py-2">{Engagement.sexe}</td>
                       <td className="px-3 py-2">{Engagement.dateNaissance}</td>
