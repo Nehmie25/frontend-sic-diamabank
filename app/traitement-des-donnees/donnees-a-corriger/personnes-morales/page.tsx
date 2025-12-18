@@ -292,9 +292,9 @@ ${personnes
               <div className="mt-6 flex justify-center">
                 <button
                   onClick={handleExport}
-                  disabled={!hasSearched}
+                  disabled={personnes.length<1}
                   className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                    hasSearched ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer" : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    personnes.length > 0 ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer" : "bg-slate-300 text-slate-500 cursor-not-allowed"
                   }`}
                 >
                   <HiOutlineDownload size={18} />
