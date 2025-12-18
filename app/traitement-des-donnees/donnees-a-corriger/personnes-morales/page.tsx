@@ -227,23 +227,31 @@ export default function PersonnesMoralesPage() {
   }
 
   const handleExport = () => {
-    // Export the currently displayed list (filtered results) so export matches the visible table
+    // Exporter la liste actuellement affichée (résultats filtrés) afin que l'export corresponde au tableau visible
     const toExport = filteredPersonnes.length > 0 ? filteredPersonnes : personnes
     if (toExport.length === 0) return
-
+    // Construire le XML à partir de toExport (typé) et le télécharger — sans les wrappers <Response> / <data>
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <data>
-    <declaration>
+<declaration>
 ${toExport
-        .map(
-          (p) =>
-            `      <PersonneMorale NatDec="${p.natDec}" NatClient="${p.natClient}" IdInterneClt="${p.idInterneClt}" DenomSocial="${p.denomSocial}" DatCreat="${p.datCreat}" Statut="${p.statut}" DatCreaPart="${p.datCreaPart}" FormeJuridique="${p.formeJuridique ?? ""}" PaysSiegeSocial="${p.paysSiegeSocial ?? ""}" VilleSiegeSocial="${p.villeSiegeSocial ?? ""}" Mobile="${p.mobile ?? ""}" Adress="${p.adress ?? ""}" CodePostal="${p.codePostal ?? ""}" Resident="${p.resident ?? ""}" ActEcon="${p.actEcon ?? ""}" SectInst="${p.sectInst ?? ""}" SitBancaire="${p.sitBancaire ?? ""}" RCCM="${p.rccm ?? ""}" NIFP="${p.nifp ?? ""}" Email="${p.email ?? ""}"></PersonneMorale>`
-        )
+        .map((p: PersonneMorale) => {
+          const comptes = p.compteAssocie
+            ?.map((c) => {
+              const codAgce = String(c.codAgce ?? "").trim()
+              const numCpt = String(c.numCpt ?? "").trim()
+              const cleRib = String(c.cleRib ?? "").trim()
+              const statCpt = String(c.statCpt ?? "").trim()
+              //  balise fermée CompteAssocie même si vide
+              return `        <CompteAssocie CodAgce="${codAgce}" NumCpt="${numCpt}" CleRib="${cleRib}" StatCpt="${statCpt}"> </CompteAssocie>`
+            })
+            .join("\n") || ""
+
+          return `  <PersonneMorale NatDec="${p.natDec}" NatClient="${p.natClient}" IdInterneClt="${p.idInterneClt}" DenomSocial="${p.denomSocial}" DatCreat="${p.datCreat}" Statut="${p.statut}" DatCreaPart="${p.datCreaPart}" FormeJuridique="${p.formeJuridique ?? ""}" PaysSiegeSocial="${p.paysSiegeSocial ?? ""}" VilleSiegeSocial="${p.villeSiegeSocial ?? ""}" Mobile="${p.mobile ?? ""}" Adress="${p.adress ?? ""}" CodePostal="${p.codePostal ?? ""}" Resident="${p.resident ?? ""}" RCCM="${p.rccm ?? ""}" NIFP="${p.nifp ?? ""}" ActEcon="${p.actEcon ?? ""}" SectInst="${p.sectInst ?? ""}" SitBancaire="${p.sitBancaire ?? ""}">
+${comptes}
+  </PersonneMorale>`
+        })
         .join("\n")}
-    </declaration>
-  </data>
-</Response>`
+</declaration>`
 
     const blob = new Blob([xml], { type: "application/xml" })
     const url = URL.createObjectURL(blob)
