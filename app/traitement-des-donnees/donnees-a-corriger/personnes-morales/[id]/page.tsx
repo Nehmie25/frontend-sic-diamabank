@@ -7,6 +7,9 @@ import { useEffect, useMemo, useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
 
+// Page de détail pour une personne morale
+// Affiche les informations générales, documents légaux, comptes associés et informations complémentaires
+
 type CompteAssocie = {
   codAgce: string
   numCpt: string
@@ -95,6 +98,7 @@ export default function PersonneMoraleDetail() {
   )
   const [showPieceModal, setShowPieceModal] = useState(false)
   const [showCompteModal, setShowCompteModal] = useState(false)
+  // États pour contrôler l'ouverture des modaux d'ajout (document / compte)
   const [currentStep, setCurrentStep] = useState(0)
   const validationIndicators: Record<number, "error" | "success" | undefined> = {
     0: "error",
@@ -103,6 +107,8 @@ export default function PersonneMoraleDetail() {
   }
 
   useEffect(() => {
+    // Charger la personne depuis le sessionStorage si disponible
+    // Sinon, rechercher dans la liste sauvegardée (`pm_personnes`)
     if (!idParam || personne) return
 
     const stored = sessionStorage.getItem("personneMoraleData")
@@ -133,6 +139,7 @@ export default function PersonneMoraleDetail() {
   }, [idParam, personne])
 
   const documentsLegaux = useMemo(() => {
+    // Construire la liste des documents légaux (RCCM, NIFP) à partir des attributs de la personne
     if (!personne) return []
     const docs = []
     if (personne.rccm) {
@@ -160,11 +167,13 @@ export default function PersonneMoraleDetail() {
 
   const timelineSteps = stepLabels.map((label, idx) => ({
     label,
-    state: idx < currentStep ? "complete" : idx === currentStep ? "active" : "pending",
+    // Assurer le typage explicite pour `state` (StepState)
+    state: (idx < currentStep ? "complete" : idx === currentStep ? "active" : "pending") as "complete" | "active" | "pending",
     hasError: validationIndicators[idx] === "error",
     hasSuccess: validationIndicators[idx] === "success",
   }))
 
+  // Indique si aucune personne n'est chargée (état vide)
   const emptyState = !personne
 
   return (
