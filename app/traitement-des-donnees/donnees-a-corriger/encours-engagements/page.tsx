@@ -104,7 +104,7 @@ export default function EncoursEngagementsPage() {
   const [countLines, setCountLines] = useState(0);
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/encoursengagements?date=${date}`)
+    const response = await fetch(`http://10.0.16.4:8081/declaration/encours?date=${date}`)
 
     const data = await response.text()
 
