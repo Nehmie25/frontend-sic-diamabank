@@ -65,9 +65,7 @@ type PersonnePhysique = {
 
 
 export default function PersonnesPhysiquesPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
-  )
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
