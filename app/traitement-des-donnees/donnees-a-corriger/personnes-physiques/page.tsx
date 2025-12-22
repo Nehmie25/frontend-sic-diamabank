@@ -10,7 +10,9 @@ import { FiChevronDown } from "react-icons/fi"
 import { HiOutlineDownload } from "react-icons/hi"
 import DatePicker from "react-datepicker"
 import { fr } from "date-fns/locale"
+import { toast, ToastContainer } from "react-toastify"
 import "react-datepicker/dist/react-datepicker.css"
+import "react-toastify/dist/ReactToastify.css"
 
 type PersonnePhysique = {
   id: number
@@ -151,80 +153,97 @@ export default function PersonnesPhysiquesPage() {
 
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
+    try {
+      const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysiqued?date=${date}`)
 
-    const data = await response.text()
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
+      }
 
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(data, "text/xml");
-    const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
-    const mapped = Array.from(personnesElements).map(el => {
-      // Récupérer tous les CompteAssocie
-      const comptes = Array.from(el.querySelectorAll("CompteAssocie")).map(compte => ({
-        codAgce: compte.getAttribute("CodAgce") || "",
-        numCpt: compte.getAttribute("NumCpt") || "",
-        cleRib: compte.getAttribute("CleRib") || "",
-        typCpt: compte.getAttribute("TypCpt") || "",
-        statCpt: compte.getAttribute("StatCpt") || "",
-      }));
+      const data = await response.text()
 
-      // Récupérer tous les Piece
-      const pieces = Array.from(el.querySelectorAll("Piece")).map(piece => ({
-        typPiece: piece.getAttribute("TypPiece") || "",
-        numPiece: piece.getAttribute("NumPiece") || "",
-        datEmiPiece: piece.getAttribute("DatEmiPiece") || "",
-        lieuEmiPiece: piece.getAttribute("LieuEmiPiece") || "",
-        paysEmiPiece: piece.getAttribute("PaysEmiPiece") || "",
-        finValPiece: piece.getAttribute("FinValPiece") || "",
-      }));
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(data, "text/xml");
+      
+      // Vérifier les erreurs de parsing XML
+      if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+        throw new Error("Erreur lors du parsing XML: Le format du document n'est pas valide");
+      }
 
-      return {
-        id: parseInt(el.getAttribute("IdInterneClt") || "0"),
-        natureClient: parseInt(el.getAttribute("NatClient") || "0"),
-        identifiant: el.getAttribute("NumSecSoc") || "",
-        nom: el.getAttribute("NomNaiClt") || "",
-        prenom: el.getAttribute("PrenomClt") || "",
-        sexe: el.getAttribute("Sexe") || "",
-        dateNaissance: el.getAttribute("DatNai") || "",
-        lieuNaissance: el.getAttribute("VilleNai") || "",
-        paysNaissance: el.getAttribute("PaysNai") || "",
-        adresse: el.getAttribute("Adress") || "",
-        // Nouveaux champs
-        natDec: el.getAttribute("NatDec") || "",
-        idInterneClt: el.getAttribute("IdInterneClt") || "",
-        datCreaPart: el.getAttribute("DatCreaPart") || "",
-        nomNaiClt: el.getAttribute("NomNaiClt") || "",
-        prenomClt: el.getAttribute("PrenomClt") || "",
-        etatCivil: el.getAttribute("EtatCivil") || "",
-        nomPere: el.getAttribute("NomPere") || "",
-        prenomPere: el.getAttribute("PrenomPere") || "",
-        nomNaiMere: el.getAttribute("NomNaiMere") || "",
-        prmMre: el.getAttribute("PrmMre") || "",
-        villeNai: el.getAttribute("VilleNai") || "",
-        natClt: el.getAttribute("NatClt") || "",
-        resident: el.getAttribute("Resident") || "",
-        paysRes: el.getAttribute("PaysRes") || "",
-        mobile: el.getAttribute("Mobile") || "",
-        communeAdress: el.getAttribute("CommuneAdress") || "",
-        sectInst: el.getAttribute("SectInst") || "",
-        numSecSoc: el.getAttribute("NumSecSoc") || "",
-        sTutelle: el.getAttribute("STutelle") || "",
-        statutClt: el.getAttribute("StatutClt") || "",
-        sitBancaire: el.getAttribute("SitBancaire") || "",
-        // Éléments imbriqués
-        compteAssocie: comptes,
-        piece: pieces,
-      };
-    });
-    setPersonnes(mapped);
-    setCountLines(mapped.length);
-    return mapped.length;
+      const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
+      const mapped = Array.from(personnesElements).map(el => {
+        // Récupérer tous les CompteAssocie
+        const comptes = Array.from(el.querySelectorAll("CompteAssocie")).map(compte => ({
+          codAgce: compte.getAttribute("CodAgce") || "",
+          numCpt: compte.getAttribute("NumCpt") || "",
+          cleRib: compte.getAttribute("CleRib") || "",
+          typCpt: compte.getAttribute("TypCpt") || "",
+          statCpt: compte.getAttribute("StatCpt") || "",
+        }));
+
+        // Récupérer tous les Piece
+        const pieces = Array.from(el.querySelectorAll("Piece")).map(piece => ({
+          typPiece: piece.getAttribute("TypPiece") || "",
+          numPiece: piece.getAttribute("NumPiece") || "",
+          datEmiPiece: piece.getAttribute("DatEmiPiece") || "",
+          lieuEmiPiece: piece.getAttribute("LieuEmiPiece") || "",
+          paysEmiPiece: piece.getAttribute("PaysEmiPiece") || "",
+          finValPiece: piece.getAttribute("FinValPiece") || "",
+        }));
+
+        return {
+          id: parseInt(el.getAttribute("IdInterneClt") || "0"),
+          natureClient: parseInt(el.getAttribute("NatClient") || "0"),
+          identifiant: el.getAttribute("NumSecSoc") || "",
+          nom: el.getAttribute("NomNaiClt") || "",
+          prenom: el.getAttribute("PrenomClt") || "",
+          sexe: el.getAttribute("Sexe") || "",
+          dateNaissance: el.getAttribute("DatNai") || "",
+          lieuNaissance: el.getAttribute("VilleNai") || "",
+          paysNaissance: el.getAttribute("PaysNai") || "",
+          adresse: el.getAttribute("Adress") || "",
+          // Nouveaux champs
+          natDec: el.getAttribute("NatDec") || "",
+          idInterneClt: el.getAttribute("IdInterneClt") || "",
+          datCreaPart: el.getAttribute("DatCreaPart") || "",
+          nomNaiClt: el.getAttribute("NomNaiClt") || "",
+          prenomClt: el.getAttribute("PrenomClt") || "",
+          etatCivil: el.getAttribute("EtatCivil") || "",
+          nomPere: el.getAttribute("NomPere") || "",
+          prenomPere: el.getAttribute("PrenomPere") || "",
+          nomNaiMere: el.getAttribute("NomNaiMere") || "",
+          prmMre: el.getAttribute("PrmMre") || "",
+          villeNai: el.getAttribute("VilleNai") || "",
+          natClt: el.getAttribute("NatClt") || "",
+          resident: el.getAttribute("Resident") || "",
+          paysRes: el.getAttribute("PaysRes") || "",
+          mobile: el.getAttribute("Mobile") || "",
+          communeAdress: el.getAttribute("CommuneAdress") || "",
+          sectInst: el.getAttribute("SectInst") || "",
+          numSecSoc: el.getAttribute("NumSecSoc") || "",
+          sTutelle: el.getAttribute("STutelle") || "",
+          statutClt: el.getAttribute("StatutClt") || "",
+          sitBancaire: el.getAttribute("SitBancaire") || "",
+          // Éléments imbriqués
+          compteAssocie: comptes,
+          piece: pieces,
+        };
+      });
+      setPersonnes(mapped);
+      setCountLines(mapped.length);
+      return mapped.length;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue s'est produite";
+      console.error("Erreur lors de la récupération des données:", errorMessage);
+      toast.error(`Erreur: ${errorMessage}`);
+      return 0;
+    }
   }
 
   const handleSearch = async () => {
     // Vérifier si une date a été sélectionnée
     if (!selectedDate) {
-      alert("Veuillez sélectionner une date");
+      toast.warning("Veuillez sélectionner une date");
       return;
     }
 
@@ -310,6 +329,7 @@ export default function PersonnesPhysiquesPage() {
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeButton theme="light" />
       <aside className="fixed left-0 top-0 h-full">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       </aside>
