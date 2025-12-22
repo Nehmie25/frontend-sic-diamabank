@@ -154,7 +154,7 @@ export default function PersonnesPhysiquesPage() {
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
     try {
-      const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysiqued?date=${date}`)
+      const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
 
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
