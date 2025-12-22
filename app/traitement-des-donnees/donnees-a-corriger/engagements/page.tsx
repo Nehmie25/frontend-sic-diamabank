@@ -10,6 +10,7 @@ import { HiOutlineDownload } from "react-icons/hi"
 import { fr } from "date-fns/locale"
 import "react-datepicker/dist/react-datepicker.css"
 import DatePicker from "react-datepicker"
+import { toast, ToastContainer } from "react-toastify"
 
 
 type Engagement = {
@@ -134,61 +135,71 @@ export default function EngagementsPage() {
   }, [searchTerm]);
 
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/engagements?date=${date}`)
-
-    const data = await response.text()
-
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(data, "text/xml");
-    const personnesElements = xmlDoc.querySelectorAll("Engagement");
-    const mapped = Array.from(personnesElements).map(el => {
-
-        const beneficiaires = Array.from(el.querySelectorAll("Beneficiaire")).map(beneficiaire => ({
-          IdIntBen: beneficiaire.getAttribute("IdIntBen") || "",
-          PourBenef: beneficiaire.getAttribute("PourBenef") || "",
-        }));
-
-        return {
-          natDec: el.getAttribute("NatDec") || "",
-          typEve: el.getAttribute("TypEve") || "",
-          refIntEng: el.getAttribute("RefIntEng") || "",
-          ligneParent: el.getAttribute("LigneParent") || "",
-          typeModif: el.getAttribute("TypeModif") || "",
-          cloture: el.getAttribute("Cloture") || "",
-          dateMEP: el.getAttribute("DateMEP") || "",
-          typEng: el.getAttribute("TypEng") || "",
-          mntEng: el.getAttribute("MntEng") || "",
-          mntInt: el.getAttribute("MntInt") || "",
-          codDev: el.getAttribute("CodDev") || "",
-          periodRemb: el.getAttribute("PeriodRemb") || "",
-          txIntEng: el.getAttribute("TxIntEng") || "",
-          typTxInt: el.getAttribute("TypTxInt") || "",
-          txEffGlob: el.getAttribute("TxEffGlob") || "",
-          moyRemb: el.getAttribute("MoyRemb") || "",
-          typAmo: el.getAttribute("TypAmo") || "",
-          typDiffAmo: el.getAttribute("TypDiffAmo") || "",
-          mntEch: el.getAttribute("MntEch") || "",
-          nbrEch: el.getAttribute("NbrEch") || "",
-          datPremEch: el.getAttribute("DatPremEch") || "",
-          datFin: el.getAttribute("DatFin") || "",
-          mntFrais: el.getAttribute("MntFrais") || "",
-          mntComm: el.getAttribute("MntComm") || "",
-          codAgce: el.getAttribute("CodAgce") || "",
-          estRachatCreance: el.getAttribute("EstRachatCreance") || "",
-          datEvent: el.getAttribute("DatEvent") || "",
-          beneficiaire: beneficiaires,
-        }
-    });
-    setEngagements(mapped);
-    console.log('Engagements récupérés :', mapped);
-    setCountLines(mapped.length);
-    return mapped.length;
+    try {
+      const response = await fetch(`http://10.0.16.4:8081/declaration/engagements?date=${date}`)
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
+      }
+  
+      const data = await response.text()
+  
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(data, "text/xml");
+      const personnesElements = xmlDoc.querySelectorAll("Engagement");
+      const mapped = Array.from(personnesElements).map(el => {
+  
+          const beneficiaires = Array.from(el.querySelectorAll("Beneficiaire")).map(beneficiaire => ({
+            IdIntBen: beneficiaire.getAttribute("IdIntBen") || "",
+            PourBenef: beneficiaire.getAttribute("PourBenef") || "",
+          }));
+  
+          return {
+            natDec: el.getAttribute("NatDec") || "",
+            typEve: el.getAttribute("TypEve") || "",
+            refIntEng: el.getAttribute("RefIntEng") || "",
+            ligneParent: el.getAttribute("LigneParent") || "",
+            typeModif: el.getAttribute("TypeModif") || "",
+            cloture: el.getAttribute("Cloture") || "",
+            dateMEP: el.getAttribute("DateMEP") || "",
+            typEng: el.getAttribute("TypEng") || "",
+            mntEng: el.getAttribute("MntEng") || "",
+            mntInt: el.getAttribute("MntInt") || "",
+            codDev: el.getAttribute("CodDev") || "",
+            periodRemb: el.getAttribute("PeriodRemb") || "",
+            txIntEng: el.getAttribute("TxIntEng") || "",
+            typTxInt: el.getAttribute("TypTxInt") || "",
+            txEffGlob: el.getAttribute("TxEffGlob") || "",
+            moyRemb: el.getAttribute("MoyRemb") || "",
+            typAmo: el.getAttribute("TypAmo") || "",
+            typDiffAmo: el.getAttribute("TypDiffAmo") || "",
+            mntEch: el.getAttribute("MntEch") || "",
+            nbrEch: el.getAttribute("NbrEch") || "",
+            datPremEch: el.getAttribute("DatPremEch") || "",
+            datFin: el.getAttribute("DatFin") || "",
+            mntFrais: el.getAttribute("MntFrais") || "",
+            mntComm: el.getAttribute("MntComm") || "",
+            codAgce: el.getAttribute("CodAgce") || "",
+            estRachatCreance: el.getAttribute("EstRachatCreance") || "",
+            datEvent: el.getAttribute("DatEvent") || "",
+            beneficiaire: beneficiaires,
+          }
+      });
+      setEngagements(mapped);
+      console.log('Engagements récupérés :', mapped);
+      setCountLines(mapped.length);
+      return mapped.length;
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue s'est produite";   
+        console.error("Erreur lors de la récupération des données:", errorMessage);    
+        toast.error(`Erreur: ${errorMessage}`);      
+        return 0;
+    }
   }
 
   const handleSearch = async () => {
     // Vérifier si une date a été sélectionnée
     if (!selectedDate) {
-      alert("Veuillez sélectionner une date");
+      toast.warning("Veuillez sélectionner une date");
       return;
     }
 
@@ -263,6 +274,7 @@ export default function EngagementsPage() {
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeButton theme="light" />
       <aside className="fixed left-0 top-0 h-full">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       </aside>
