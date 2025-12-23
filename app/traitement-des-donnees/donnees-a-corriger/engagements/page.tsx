@@ -60,6 +60,7 @@ export default function EngagementsPage() {
     rejetees: 0,
     validees: 0,
   })
+  let isApiResponded=0
   const [engagements, setEngagements] = useState<Engagement[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [countLines, setCountLines] = useState(0)
@@ -140,7 +141,7 @@ export default function EngagementsPage() {
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
       }
-  
+      isApiResponded=1
       const data = await response.text()
   
       const parser = new DOMParser();
@@ -357,7 +358,7 @@ export default function EngagementsPage() {
                 <div className="mt-6 flex justify-center">
                   <button 
                     onClick={handleExport}
-                    disabled={engagements.length<1}
+                    disabled={engagements.length<1 || isApiResponded!=1}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
                       engagements.length>0
                         ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
