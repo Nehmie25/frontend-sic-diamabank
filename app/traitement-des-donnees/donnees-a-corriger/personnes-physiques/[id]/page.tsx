@@ -4,7 +4,6 @@ import Sidebar from "@/components/Sidebar"
 import StepTimeline from "@/components/StepTimeline"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
 import { IoArrowBack } from "react-icons/io5"
 
@@ -142,8 +141,6 @@ export default function PersonnePhysiqueDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
-  const [showPieceModal, setShowPieceModal] = useState(false)
-  const [showCompteModal, setShowCompteModal] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const validationIndicators: Record<number, "error" | "success" | undefined> = {
     0: "success",
@@ -232,23 +229,6 @@ export default function PersonnePhysiqueDetail() {
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-4 py-3">
                 <h2 className="text-base font-semibold text-slate-800">Liste des pièces d’identité</h2>
-                {/* <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Rechercher"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                    />
-                    <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  </div>
-                  {/* <button
-                    type="button"
-                    onClick={() => setShowPieceModal(true)}
-                    className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
-                  >
-                    Ajouter une pièce
-                  </button> 
-                </div> */}
               </div>
               <div className="overflow-auto">
                 <table className="min-w-full text-sm">
@@ -285,23 +265,6 @@ export default function PersonnePhysiqueDetail() {
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-4 py-3">
                 <h2 className="text-base font-semibold text-slate-800">Liste des comptes associés</h2>
-                {/* <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Rechercher"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                    />
-                    <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  </div>
-                  {/* <button
-                    type="button"
-                    onClick={() => setShowCompteModal(true)}
-                    className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
-                  >
-                    Ajouter un compte
-                  </button> }
-                </div> */}
               </div>
               <div className="overflow-auto">
                 <table className="min-w-full text-sm">
@@ -438,89 +401,6 @@ export default function PersonnePhysiqueDetail() {
             )}
           </div>
         </div>
-
-        {showPieceModal ? (
-          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 px-4 py-10">
-            <div className="w-full max-w-4xl rounded-lg bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-800">Informations de pièce d’identité</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowPieceModal(false)}
-                  className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
-                >
-                  <IoClose size={18} />
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="Type de pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Numéro de pièce" required />
-                  <Field label="Pays émission pièce" required />
-                  <Field label="Lieu émission pièce" required />
-                  <Field label="Date émission pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Date fin validité pièce" required error="Ce champ est obligatoire" />
-                </div>
-              </div>
-              <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">
-                <button
-                  type="button"
-                  className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                  onClick={() => setShowPieceModal(false)}
-                >
-                  Fermer
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
-                >
-                  Valider
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {showCompteModal ? (
-          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 px-4 py-10">
-            <div className="w-full max-w-3xl rounded-lg bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-800">Informations de compte associé</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowCompteModal(false)}
-                  className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
-                >
-                  <IoClose size={18} />
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="Agence du compte" required error="Sélectionnez une valeur" />
-                  <Field label="Type de compte" required />
-                  <Field label="N° de compte" required />
-                  <Field label="Clé RIB" required />
-                  <Field label="Statut du compte" required />
-                </div>
-              </div>
-              <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">
-                <button
-                  type="button"
-                  className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                  onClick={() => setShowCompteModal(false)}
-                >
-                  Fermer
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
-                >
-                  Valider
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </main>
     </div>
   )
