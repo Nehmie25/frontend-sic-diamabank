@@ -9,7 +9,7 @@ import { MdOutlineZoomIn } from "react-icons/md"
 import { FiChevronDown } from "react-icons/fi"
 import { HiOutlineDownload } from "react-icons/hi"
 import DatePicker from "react-datepicker"
-import { fr } from "date-fns/locale"
+import { fr, nb } from "date-fns/locale"
 import { toast, ToastContainer } from "react-toastify"
 import "react-datepicker/dist/react-datepicker.css"
 import "react-toastify/dist/ReactToastify.css"
@@ -25,7 +25,6 @@ type PersonnePhysique = {
   lieuNaissance: string
   paysNaissance: string
   adresse: string
-  // Nouveaux champs
   natDec?: string
   idInterneClt?: string
   datCreaPart?: string
@@ -61,6 +60,21 @@ type PersonnePhysique = {
     lieuEmiPiece: string
     paysEmiPiece: string
     finValPiece: string
+  }>
+  donneeComplementaire?: Array<{
+    nbPersCharge: string
+    revMensMoy: string
+    depMensMoy: string
+    propLoc: string
+  }>
+  employeur?: Array<{
+    idInterneEmpl: string
+    denominationSociale: string
+    rccm: string
+    nif: string
+    nifp: string
+    dateCreation: string
+    dateEntree: string
   }>
 }
 
@@ -170,6 +184,8 @@ export default function PersonnesPhysiquesPage() {
         throw new Error("Erreur lors du parsing XML: Le format du document n'est pas valide");
       }
 
+      toast.success(`Données récupérées avec succès`);
+
       const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
       const mapped = Array.from(personnesElements).map(el => {
         // Récupérer tous les CompteAssocie
@@ -189,6 +205,25 @@ export default function PersonnesPhysiquesPage() {
           lieuEmiPiece: piece.getAttribute("LieuEmiPiece") || "",
           paysEmiPiece: piece.getAttribute("PaysEmiPiece") || "",
           finValPiece: piece.getAttribute("FinValPiece") || "",
+        }));
+
+        // Récupérer tous les donnes complmentaires
+        const donneesComplementaires = Array.from(el.querySelectorAll("DonneeComplementaire")).map(dc => ({
+          nbPersCharge: dc.getAttribute("NbPersCharge") || "",
+          revMensMoy: dc.getAttribute("RevMensMoy") || "",
+          depMensMoy: dc.getAttribute("DepMensMoy") || "",
+          propLoc: dc.getAttribute("PropLoc") || "",
+        }));
+
+        // Récupérer tous les employeurs
+        const employeurs = Array.from(el.querySelectorAll("Employeur")).map(emp => ({
+          idInterneEmpl: emp.getAttribute("IdInterneEmpl") || "",
+          denominationSociale: emp.getAttribute("DenominationSociale") || "",
+          rccm: emp.getAttribute("Rccm") || "",
+          nif: emp.getAttribute("Nif") || "",
+          nifp: emp.getAttribute("Nifp") || "",
+          dateCreation: emp.getAttribute("DateCreation") || "",
+          dateEntree: emp.getAttribute("DateEntree") || "",
         }));
 
         return {
@@ -227,6 +262,8 @@ export default function PersonnesPhysiquesPage() {
           // Éléments imbriqués
           compteAssocie: comptes,
           piece: pieces,
+          donneeComplementaire: donneesComplementaires,
+          employeur: employeurs,
         };
       });
       setPersonnes(mapped);
@@ -235,7 +272,7 @@ export default function PersonnesPhysiquesPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue s'est produite";
       console.error("Erreur lors de la récupération des données:", errorMessage);
-      toast.error(`Erreur: ${errorMessage}`);
+      toast.error(`Erreur lors de la récupération des données`);
       return 0;
     }
   }
