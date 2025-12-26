@@ -18,8 +18,16 @@ type Engagement = {
   typEve: string;
   refIntEng: string;
   ligneParent: string;
+  refIntLigne: string;
+  refDemandeEng: string;
+  datDem: string;
   typeModif: string;
+  typRestruc: string;
+  estDout: string;
   cloture: string;
+  motifCloture: string;
+  datClo: string;
+  datAccord: string;
   dateMEP: string;
   typEng: string;
   mntEng: string;
@@ -28,10 +36,15 @@ type Engagement = {
   periodRemb: string;
   txIntEng: string;
   typTxInt: string;
+  txComm: string;
+  indRef: string;
+  sprd: string;
   txEffGlob: string;
   moyRemb: string;
   typAmo: string;
   typDiffAmo: string;
+  unitDur: string;
+  perDiffAmo: string;
   mntEch: string;
   nbrEch: string;
   datPremEch: string;
@@ -40,11 +53,28 @@ type Engagement = {
   mntComm: string;
   codAgce: string;
   estRachatCreance: string;
+  parCont: string;
+  valNom: string;
+  valCess: string;
   datEvent: string;
-  beneficiaire:Array<{
+  beneficiaire: Array<{
     IdIntBen: string;
     PourBenef: string;
-  }>
+  }>;
+  garantie: Array<{
+    RefIntGar: string;
+    TypGar: string;
+    DesGar: string;
+    CodDev: string;
+    MntGar: string;
+    TypIdent: string;
+    CodIdent: string;
+    DatEval: string;
+    DatExp: string;
+    MntAffecGar: string;
+    StatutGarantie: string;
+    IdIntGarant: string;
+  }>;
 }
 
 
@@ -60,7 +90,6 @@ export default function EngagementsPage() {
     rejetees: 0,
     validees: 0,
   })
-  let isApiResponded=0
   const [engagements, setEngagements] = useState<Engagement[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [countLines, setCountLines] = useState(0)
@@ -139,9 +168,8 @@ export default function EngagementsPage() {
     try {
       const response = await fetch(`http://10.0.16.4:8081/declaration/engagements?date=${date}`)
       if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
+        throw new Error(`Erreur HTTP: Impossible de joindre le serveur: assurez-vous que le serveur soit en ligne ou contactez l'administrateur.`);
       }
-      isApiResponded=1
       const data = await response.text()
   
       const parser = new DOMParser();
@@ -153,14 +181,37 @@ export default function EngagementsPage() {
             IdIntBen: beneficiaire.getAttribute("IdIntBen") || "",
             PourBenef: beneficiaire.getAttribute("PourBenef") || "",
           }));
-  
+
+          const garanties = Array.from(el.querySelectorAll("Garantie")).map(garantie => ({
+            RefIntGar: garantie.getAttribute("RefIntGar") || "",
+            TypGar: garantie.getAttribute("TypGar") || "",
+            DesGar: garantie.getAttribute("DesGar") || "",
+            CodDev: garantie.getAttribute("CodDev") || "",
+            MntGar: garantie.getAttribute("MntGar") || "",
+            TypIdent: garantie.getAttribute("TypIdent") || "",
+            CodIdent: garantie.getAttribute("CodIdent") || "",
+            DatEval: garantie.getAttribute("DatEval") || "",
+            DatExp: garantie.getAttribute("DatExp") || "",
+            MntAffecGar: garantie.getAttribute("MntAffecGar") || "",
+            StatutGarantie: garantie.getAttribute("StatutGarantie") || "",
+            IdIntGarant: garantie.getAttribute("IdIntGarant") || "",
+          }));
+
           return {
             natDec: el.getAttribute("NatDec") || "",
             typEve: el.getAttribute("TypEve") || "",
             refIntEng: el.getAttribute("RefIntEng") || "",
             ligneParent: el.getAttribute("LigneParent") || "",
+            refIntLigne: el.getAttribute("RefIntLigne") || "",
+            refDemandeEng: el.getAttribute("RefDemandeEng") || "",
+            datDem: el.getAttribute("DatDem") || "",
             typeModif: el.getAttribute("TypeModif") || "",
+            typRestruc: el.getAttribute("TypRestruc") || "",
+            estDout: el.getAttribute("EstDout") || "",
             cloture: el.getAttribute("Cloture") || "",
+            motifCloture: el.getAttribute("MotifCloture") || "",
+            datClo: el.getAttribute("DatClo") || "",
+            datAccord: el.getAttribute("DatAccord") || "",
             dateMEP: el.getAttribute("DateMEP") || "",
             typEng: el.getAttribute("TypEng") || "",
             mntEng: el.getAttribute("MntEng") || "",
@@ -169,10 +220,15 @@ export default function EngagementsPage() {
             periodRemb: el.getAttribute("PeriodRemb") || "",
             txIntEng: el.getAttribute("TxIntEng") || "",
             typTxInt: el.getAttribute("TypTxInt") || "",
+            txComm: el.getAttribute("TxComm") || "",
+            indRef: el.getAttribute("IndRef") || "",
+            sprd: el.getAttribute("Sprd") || "",
             txEffGlob: el.getAttribute("TxEffGlob") || "",
             moyRemb: el.getAttribute("MoyRemb") || "",
             typAmo: el.getAttribute("TypAmo") || "",
             typDiffAmo: el.getAttribute("TypDiffAmo") || "",
+            unitDur: el.getAttribute("UnitDur") || "",
+            perDiffAmo: el.getAttribute("PerDiffAmo") || "",
             mntEch: el.getAttribute("MntEch") || "",
             nbrEch: el.getAttribute("NbrEch") || "",
             datPremEch: el.getAttribute("DatPremEch") || "",
@@ -181,8 +237,12 @@ export default function EngagementsPage() {
             mntComm: el.getAttribute("MntComm") || "",
             codAgce: el.getAttribute("CodAgce") || "",
             estRachatCreance: el.getAttribute("EstRachatCreance") || "",
+            parCont: el.getAttribute("ParCont") || "",
+            valNom: el.getAttribute("ValNom") || "",
+            valCess: el.getAttribute("ValCess") || "",
             datEvent: el.getAttribute("DatEvent") || "",
             beneficiaire: beneficiaires,
+            garantie: garanties,
           }
       });
       setEngagements(mapped);
@@ -192,7 +252,7 @@ export default function EngagementsPage() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue s'est produite";   
         console.error("Erreur lors de la récupération des données:", errorMessage);    
-        toast.error(`Erreur: ${errorMessage}`);      
+        toast.error(`Erreur: ${errorMessage}`);
         return 0;
     }
   }
@@ -242,7 +302,10 @@ export default function EngagementsPage() {
   const handleExport = () => {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
      <declaration>
-    ${engagements.map(p => `      <Engagement NatDec="${p.natDec || ''}" TypEve="${p.typEve || ''}" RefIntEng="${p.refIntEng || ''}" LigneParent="${p.ligneParent || ''}" TypeModif="${p.typeModif || ''}" Cloture="${p.cloture || ''}" DateMEP="${p.dateMEP || ''}" TypEng="${p.typEng || ''}" MntEng="${p.mntEng || ''}" MntInt="${p.mntInt || ''}" CodDev="${p.codDev || ''}" PeriodRemb="${p.periodRemb || ''}" TxIntEng="${p.txIntEng || ''}" TypTxInt="${p.typTxInt || ''}" TxEffGlob="${p.txEffGlob || ''}" MoyRemb="${p.moyRemb || ''}" TypAmo="${p.typAmo || ''}" TypDiffAmo="${p.typDiffAmo || ''}" MntEch="${p.mntEch || ''}" NbrEch="${p.nbrEch || ''}" DatPremEch="${p.datPremEch || ''}" DatFin="${p.datFin || ''}" MntFrais="${p.mntFrais || ''}" MntComm="${p.mntComm || ''}" CodAgce="${p.codAgce || ''}"></Engagement>`).join('\n')}
+    ${engagements.map(p => `      <Engagement NatDec="${p.natDec || ''}" TypEve="${p.typEve || ''}" RefIntEng="${p.refIntEng || ''}" LigneParent="${p.ligneParent || ''}" RefIntLigne="${p.refIntLigne || ''}" RefDemandeEng="${p.refDemandeEng || ''}" DatDem="${p.datDem || ''}" TypeModif="${p.typeModif || ''}" TypRestruc="${p.typRestruc || ''}" EstDout="${p.estDout || ''}" Cloture="${p.cloture || ''}" MotifCloture="${p.motifCloture || ''}" DatClo="${p.datClo || ''}" DatAccord="${p.datAccord || ''}" DateMEP="${p.dateMEP || ''}" TypEng="${p.typEng || ''}" MntEng="${p.mntEng || ''}" MntInt="${p.mntInt || ''}" CodDev="${p.codDev || ''}" PeriodRemb="${p.periodRemb || ''}" TxIntEng="${p.txIntEng || ''}" TypTxInt="${p.typTxInt || ''}" TxComm="${p.txComm || ''}" IndRef="${p.indRef || ''}" Sprd="${p.sprd || ''}" TxEffGlob="${p.txEffGlob || ''}" MoyRemb="${p.moyRemb || ''}" TypAmo="${p.typAmo || ''}" TypDiffAmo="${p.typDiffAmo || ''}" UnitDur="${p.unitDur || ''}" PerDiffAmo="${p.perDiffAmo || ''}" MntEch="${p.mntEch || ''}" NbrEch="${p.nbrEch || ''}" DatPremEch="${p.datPremEch || ''}" DatFin="${p.datFin || ''}" MntFrais="${p.mntFrais || ''}" MntComm="${p.mntComm || ''}" CodAgce="${p.codAgce || ''}" EstRachatCreance="${p.estRachatCreance || ''}" ParCont="${p.parCont || ''}" ValNom="${p.valNom || ''}" ValCess="${p.valCess || ''}" DatEvent="${p.datEvent || ''}">
+        ${p.beneficiaire.map(b => `<Beneficiaire IdIntBen="${b.IdIntBen}" PourBenef="${b.PourBenef}" />`).join('\n        ')}
+        ${p.garantie.map(g => `<Garantie RefIntGar="${g.RefIntGar}" TypGar="${g.TypGar}" DesGar="${g.DesGar}" CodDev="${g.CodDev}" MntGar="${g.MntGar}" TypIdent="${g.TypIdent}" CodIdent="${g.CodIdent}" DatEval="${g.DatEval}" DatExp="${g.DatExp}" MntAffecGar="${g.MntAffecGar}" StatutGarantie="${g.StatutGarantie}" IdIntGarant="${g.IdIntGarant}" />`).join('\n        ')}
+      </Engagement>`).join('\n')}
     </declaration>
     `;
 
@@ -358,7 +421,7 @@ export default function EngagementsPage() {
                 <div className="mt-6 flex justify-center">
                   <button 
                     onClick={handleExport}
-                    disabled={engagements.length<1 || isApiResponded!=1}
+                    disabled={engagements.length<1}
                     className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
                       engagements.length>0
                         ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
