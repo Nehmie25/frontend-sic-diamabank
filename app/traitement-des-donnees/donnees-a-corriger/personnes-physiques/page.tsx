@@ -2,14 +2,13 @@
 
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
+import Pagination from "@/components/Pagination"
+import SearchAndStats from "@/components/SearchAndStats"
+import Alert from "@/components/Alert"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
 import { MdOutlineZoomIn } from "react-icons/md"
-import { FiChevronDown } from "react-icons/fi"
-import { HiOutlineDownload } from "react-icons/hi"
-import DatePicker from "react-datepicker"
-import { fr } from "date-fns/locale"
 import { toast, ToastContainer } from "react-toastify"
 import "react-datepicker/dist/react-datepicker.css"
 import "react-toastify/dist/ReactToastify.css"
@@ -25,7 +24,6 @@ type PersonnePhysique = {
   lieuNaissance: string
   paysNaissance: string
   adresse: string
-  // Nouveaux champs
   natDec?: string
   idInterneClt?: string
   datCreaPart?: string
@@ -61,6 +59,21 @@ type PersonnePhysique = {
     lieuEmiPiece: string
     paysEmiPiece: string
     finValPiece: string
+  }>
+  donneeComplementaire?: Array<{
+    nbPersCharge: string
+    revMensMoy: string
+    depMensMoy: string
+    propLoc: string
+  }>
+  employeur?: Array<{
+    idInterneEmpl: string
+    denominationSociale: string
+    rccm: string
+    nif: string
+    nifp: string
+    dateCreation: string
+    dateEntree: string
   }>
 }
 
@@ -170,6 +183,8 @@ export default function PersonnesPhysiquesPage() {
         throw new Error("Erreur lors du parsing XML: Le format du document n'est pas valide");
       }
 
+      toast.success(`Données récupérées avec succès`);
+
       const personnesElements = xmlDoc.querySelectorAll("PersonnePhysique");
       const mapped = Array.from(personnesElements).map(el => {
         // Récupérer tous les CompteAssocie
@@ -189,6 +204,25 @@ export default function PersonnesPhysiquesPage() {
           lieuEmiPiece: piece.getAttribute("LieuEmiPiece") || "",
           paysEmiPiece: piece.getAttribute("PaysEmiPiece") || "",
           finValPiece: piece.getAttribute("FinValPiece") || "",
+        }));
+
+        // Récupérer tous les donnes complmentaires
+        const donneesComplementaires = Array.from(el.querySelectorAll("DonneeComplementaire")).map(dc => ({
+          nbPersCharge: dc.getAttribute("NbPersCharge") || "",
+          revMensMoy: dc.getAttribute("RevMensMoy") || "",
+          depMensMoy: dc.getAttribute("DepMensMoy") || "",
+          propLoc: dc.getAttribute("PropLoc") || "",
+        }));
+
+        // Récupérer tous les employeurs
+        const employeurs = Array.from(el.querySelectorAll("Employeur")).map(emp => ({
+          idInterneEmpl: emp.getAttribute("IdInterneEmpl") || "",
+          denominationSociale: emp.getAttribute("DenominationSociale") || "",
+          rccm: emp.getAttribute("Rccm") || "",
+          nif: emp.getAttribute("Nif") || "",
+          nifp: emp.getAttribute("Nifp") || "",
+          dateCreation: emp.getAttribute("DateCreation") || "",
+          dateEntree: emp.getAttribute("DateEntree") || "",
         }));
 
         return {
@@ -227,6 +261,8 @@ export default function PersonnesPhysiquesPage() {
           // Éléments imbriqués
           compteAssocie: comptes,
           piece: pieces,
+          donneeComplementaire: donneesComplementaires,
+          employeur: employeurs,
         };
       });
       setPersonnes(mapped);
@@ -235,7 +271,7 @@ export default function PersonnesPhysiquesPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue s'est produite";
       console.error("Erreur lors de la récupération des données:", errorMessage);
-      toast.error(`Erreur: ${errorMessage}`);
+      toast.error(`Erreur lors de la récupération des données`);
       return 0;
     }
   }
@@ -288,7 +324,9 @@ export default function PersonnesPhysiquesPage() {
     ${personnes.map(p => `      <PersonnePhysique NatDec="${p.natDec || ''}" NatClient="${p.natureClient}" IdInterneClt="${p.id}" DatCreaPart="${p.datCreaPart || ''}" NomNaiClt="${p.nomNaiClt || ''}" PrenomClt="${p.prenomClt || ''}" Sexe="${p.sexe}" DatNai="${p.dateNaissance}" EtatCivil="${p.etatCivil || ''}" NomPere="${p.nomPere || ''}" PrenomPere="${p.prenomPere || ''}" NomNaiMere="${p.nomNaiMere || ''}" PrmMre="${p.prmMre || ''}" VilleNai="${p.villeNai || ''}" PaysNai="${p.paysNaissance}" NatClt="${p.natClt || ''}" Resident="${p.resident || ''}" PaysRes="${p.paysRes || ''}" Mobile="${p.mobile || ''}" Adress="${p.adresse}" CommuneAdress="${p.communeAdress || ''}" SectInst="${p.sectInst || ''}" NumSecSoc="${p.identifiant}" STutelle="${p.sTutelle || ''}" StatutClt="${p.statutClt || ''}" SitBancaire="${p.sitBancaire || ''}">
     ${p.compteAssocie?.map(c => `        <CompteAssocie CodAgce="${c.codAgce}" NumCpt="${c.numCpt}" CleRib="${c.cleRib}" TypCpt="${c.typCpt}" StatCpt="${c.statCpt}"> </CompteAssocie>`).join('\n') || ''}
     ${p.piece?.map(pi => `        <Piece TypPiece="${pi.typPiece}" NumPiece="${pi.numPiece}" DatEmiPiece="${pi.datEmiPiece}" LieuEmiPiece="${pi.lieuEmiPiece}" PaysEmiPiece="${pi.paysEmiPiece}" FinValPiece="${pi.finValPiece}"> </Piece>`).join('\n') || ''}
-    </PersonnePhysique>`).join('\n')}
+    ${p.donneeComplementaire?.map(dc => `        <DonneeComplementaire NbPersCharge="${dc.nbPersCharge}" RevMensMoy="${dc.revMensMoy}" DepMensMoy="${dc.depMensMoy}" PropLoc="${dc.propLoc}"> </DonneeComplementaire>`).join('\n') || ''}
+    ${p.employeur?.map(e => `        <Employeur IdInterneEmpl="${e.idInterneEmpl}" DenominationSociale="${e.denominationSociale}" Rccm="${e.rccm}" Nif="${e.nif}" Nifp="${e.nifp}" DateCreation="${e.dateCreation}" DateEntree="${e.dateEntree}"> </Employeur>`).join('\n') || ''}
+      </PersonnePhysique>`).join('\n')}
     </declaration>
     `;
 
@@ -349,92 +387,17 @@ export default function PersonnesPhysiquesPage() {
           </div>
 
 
-          {/* Collapsible Card */}
-          <div className="mb-6 rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="border-t border-slate-200 px-6 py-6 bg-slate-50">
-                <div className="flex items-center justify-center">
-                  <div className="w-6/12 flex gap-4 items-center">
-                    <div className="flex-1">
-                      <DatePicker
-                        selected={selectedDate}
-                        onChange={(date) => setSelectedDate(date)}
-                        dateFormat="dd/MM/yyyy"
-                        locale={fr}
-                        placeholderText="Sélectionner une date"
-                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      />
-                    </div>
-                    <button 
-                      onClick={handleSearch}
-                      disabled={isLoading}
-                      className={`rounded-md px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors ${
-                        isLoading 
-                          ? "bg-slate-400 cursor-not-allowed" 
-                          : "bg-[#1E4F9B] hover:bg-[#1a4587]"
-                      }`}
-                    >
-                      {isLoading ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Recherche en cours...
-                        </span>
-                      ) : (
-                        "Rechercher"
-                      )}
-                    </button>
-                  </div>
-                </div>
+          <SearchAndStats
+            selectedDate={selectedDate}
+            isLoading={isLoading}
+            statistics={statistics}
+            personnesCount={personnes.length}
+            onDateChange={setSelectedDate}
+            onSearch={handleSearch}
+            onExport={handleExport}
+          />
 
-                {/* 4 Statistics Cards */}
-                <div className="mt-6 grid grid-cols-4 gap-4">
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-blue-600">{statistics.total}</div>
-                    <div className="mt-2 text-sm text-slate-600">Total déclarations</div>
-                  </div>
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-orange-600">{statistics.enAttente}</div>
-                    <div className="mt-2 text-sm text-slate-600">En attente de correction</div>
-                  </div>
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-red-600">{statistics.rejetees}</div>
-                    <div className="mt-2 text-sm text-slate-600">Rejetées</div>
-                  </div>
-                  <div className="rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-                    <div className="text-3xl font-bold text-green-600">{statistics.validees}</div>
-                    <div className="mt-2 text-sm text-slate-600">Validées</div>
-                  </div>
-                </div>
-
-                {/* Export Button */}
-                <div className="mt-6 flex justify-center">
-                  <button 
-                    onClick={handleExport}
-                    disabled={personnes.length < 1}
-                    className={`rounded-md px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition-colors flex items-center gap-2 ${
-                      personnes.length > 0
-                        ? "bg-[#1E4F9B] text-white hover:bg-[#1a4587] cursor-pointer"
-                        : "bg-slate-300 text-slate-500 cursor-not-allowed"
-                    }`}
-                  >
-                    <HiOutlineDownload size={18} />
-                    Exporter le fichier
-                  </button>
-                </div>
-              </div>
-          </div>
-
-          {/* Warning Message */}
-          <div className="mb-6 rounded-md border border-orange-300 bg-orange-50 p-4 text-sm text-orange-800">
-            <div className="flex items-center justify-center gap-3">
-              <svg className="h-5 w-5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <p className="font-semibold">Important : La recherche est nécessaire pour obtenir les données actualisées.</p>
-            </div>
-          </div>
+          <Alert message="Important : La recherche est nécessaire pour obtenir les données actualisées." type="warning" />
 
           <div className="mb-4 flex justify-end">
             <div className="relative w-full max-w-xs">
@@ -522,46 +485,15 @@ export default function PersonnesPhysiquesPage() {
           </div>
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-slate-600">
-                Affichage {startIndex + 1} à {Math.min(endIndex, filteredPersonnes.length)} sur {filteredPersonnes.length} résultats
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
-                >
-                  Précédent
-                </button>
-                
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
-                        currentPage === page
-                          ? "bg-[#1E4F9B] text-white"
-                          : "bg-slate-200 text-slate-800 hover:bg-slate-300"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-                
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="rounded-md px-3 py-2 text-sm font-semibold text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed bg-[#1E4F9B] hover:bg-[#1a4587]"
-                >
-                  Suivant
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            filteredLength={filteredPersonnes.length}
+            onPageChange={setCurrentPage}
+          />
+
 
         </div>
       </main>

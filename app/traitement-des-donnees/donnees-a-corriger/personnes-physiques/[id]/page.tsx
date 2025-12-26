@@ -3,13 +3,14 @@ import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import StepTimeline from "@/components/StepTimeline"
 import { useEffect, useState } from "react"
-import { HiOutlineSearch } from "react-icons/hi"
+import { useRouter } from "next/navigation"
 import { IoCheckmarkCircle, IoClose, IoCloseCircle, IoRadioButtonOn } from "react-icons/io5"
+import { IoArrowBack } from "react-icons/io5"
 
 
 type PersonnePhysique = {
   id: number
-  natureClient: number
+  natureClient: string
   identifiant: string
   nom: string
   prenom: string
@@ -18,7 +19,6 @@ type PersonnePhysique = {
   lieuNaissance: string
   paysNaissance: string
   adresse: string
-  // Nouveaux champs
   natDec?: string
   idInterneClt?: string
   datCreaPart?: string
@@ -55,20 +55,25 @@ type PersonnePhysique = {
     paysEmiPiece: string
     finValPiece: string
   }>
+  donneeComplementaire?: Array<{
+    nbPersCharge: string
+    revMensMoy: string
+    depMensMoy: string
+    propLoc: string
+  }>
+  employeur?: Array<{
+    idInterneEmpl: string
+    denominationSociale: string
+    rccm: string
+    nif: string
+    nifp: string
+    dateCreation: string
+    dateEntree: string
+  }>
 }
 
 
 const stepLabels = ["Informations générales", "Pièces d’identités", "Comptes associés", "Infos complémentaires"]
-
-const piecesIdentite = [
-  { numero: "123456789", pays: "GN", lieu: "Conakry", dateEmission: "2023-01-01", dateValidite: "2028-01-01" },
-  { numero: "0123456789", pays: "XX", lieu: "N/A", dateEmission: "2022-01-01", dateValidite: "2025-01-01" },
-]
-
-const comptesAssocies = [
-  { numero: "123456789", agence: "AG-001", type: "Compte courant", cleRib: "21", statut: "Actif" },
-  { numero: "0123456789", agence: "AG-002", type: "Épargne", cleRib: "10", statut: "Inactif" },
-]
 
 const SectionCard = ({ title, children, error }: { title: string; children: React.ReactNode; error?: string }) => (
   <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -116,14 +121,19 @@ const Field = ({
   )
 }
 
+const formatDate = (dateStr: string | undefined): string => {
+  if (!dateStr || dateStr.length !== 8) return dateStr || ""
+  return `${dateStr.slice(0, 2)}-${dateStr.slice(2, 4)}-${dateStr.slice(4, 8)}`
+}
+
 export default function PersonnePhysiqueDetail() {
 
+  const router = useRouter()
   const [personne, setPersonne] = useState<PersonnePhysique | null>(null)
 
   useEffect(() => {
     const data = sessionStorage.getItem('personneData')
     if (data) {
-      console.log('Loaded personne data from sessionStorage:', JSON.parse(data))
       setPersonne(JSON.parse(data))
     }
   }, [])
@@ -131,13 +141,12 @@ export default function PersonnePhysiqueDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
-  const [showPieceModal, setShowPieceModal] = useState(false)
-  const [showCompteModal, setShowCompteModal] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const validationIndicators: Record<number, "error" | "success" | undefined> = {
-    0: "error",
-    1: "error",
+    0: "success",
+    1: "success",
     2: "success",
+    3: "success",
   }
 
   const timelineSteps = stepLabels.map((label, idx) => ({
@@ -161,9 +170,18 @@ export default function PersonnePhysiqueDetail() {
         <Navbar onToggleSidebar={() => setSidebarOpen((v) => !v)} />
 
         <div className="flex-1 overflow-y-auto px-4 pb-10 pt-4 sm:px-6 space-y-4">
-          <div className="flex flex-col gap-2">
-            <div className="text-xs uppercase tracking-wide text-slate-500">Formulaire d’édition de personne physique</div>
-            <div className="text-sm font-semibold text-slate-800">Personne physique</div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="rounded-md p-2 bg-white text-slate-600 hover:bg-slate-100 transition-colors shadow-sm"
+              title="Retour à la page précédente"
+            >
+              <IoArrowBack size={20} />
+            </button>
+            <div className="flex flex-col gap-2">
+              <div className="text-xs uppercase tracking-wide text-slate-500">Formulaire de personne physique</div>
+              <div className="text-sm font-semibold text-slate-800">Personne physique</div>
+            </div>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm">
@@ -172,38 +190,37 @@ export default function PersonnePhysiqueDetail() {
 
           {currentStep === 0 ? (
             <>
-              <SectionCard title="Références" error="Champs obligatoires manquants">
+              <SectionCard title="Références">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Nature du client" required error="Ce champ peut prendre les valeurs 0 ou 1" />
+                  <Field label="Nature déclaration" value={personne?.natDec} required error={personne?.natDec && personne?.natDec !== "00" && personne?.natDec !== "01" ? "Ce champ peut prendre les valeurs 00 ou 01" : undefined} success={personne?.natDec === "00" || personne?.natDec === "01"} />
+                  <Field label="Nature du client" value={personne?.natureClient} required error={(personne?.natureClient && personne?.natureClient !== '0' && personne?.natureClient !== '1') ? "Ce champ peut prendre les valeurs 0 ou 1" : undefined} success={(personne?.natureClient == '0' || personne?.natureClient == '1')} />
                   <Field label="Numéro d’identification national" value="12345678" success />
-                  <Field label="Numéro client chez le participant" value="12345678901" />
-                  <Field label="Date de création" value="2023-12-10" success />
+                  <Field label="Numéro client chez le participant" value={personne?.idInterneClt || ""} error={personne?.idInterneClt === "" ? "Ce champ est obligatoire" : undefined} success={personne?.idInterneClt !== ""} />
+                  <Field label="Date de création chez le participant" value={formatDate(personne?.datCreaPart)} success={personne?.datCreaPart !== "" && personne?.datCreaPart !== undefined} error={!personne?.datCreaPart ? "Ce champ doit être obligatoire" : undefined} />
                 </div>
               </SectionCard>
 
-              <SectionCard title="Identité" error="Champs obligatoires manquants">
+              <SectionCard title="Identité">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Nom de naissance du client" value={personne?.nom || ""} required error="Champ obligatoire manquant" />
-                  <Field label="Prénom du client" value={personne?.prenom || ""} required />
-                  <Field label="Date de naissance" value={personne?.dateNaissance || ""} required success />
+                  <Field label="Nom de naissance du client" value={personne?.nomNaiClt || ""} success={personne?.nomNaiClt !== "" && personne?.nomNaiClt !== undefined} error={personne?.nomNaiClt === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Prénom du client" value={personne?.prenomClt || ""} success={personne?.prenomClt !== "" && personne?.prenomClt !== undefined} error={personne?.prenomClt === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Date de naissance" value={formatDate(personne?.dateNaissance || "")} success={personne?.dateNaissance !== "" && personne?.dateNaissance !== undefined} error={personne?.dateNaissance === "" ? "Ce champ est obligatoire" : undefined} />
                   <Field label="Nom marital du client" />
-                  <Field label="Sexe du client" value={personne?.sexe || ""} required />
-                  <Field label="Nom du client" value="(M)-Masculin" />
-                  <Field label="Prénoms du client" value="(Z)-Marié(e)" />
+                  <Field label="Sexe du client" value={personne?.sexe || ""}  error={personne?.sexe == "" ? "Ce champ est obligatoire" : undefined} success={personne?.sexe != ""} />
+                  <Field label="Etat civile" value={personne?.etatCivil || ""} success={personne?.etatCivil !== "" && personne?.etatCivil !== undefined} error={personne?.etatCivil === "" ? "Ce champ est obligatoire" : undefined} />
                   <Field label="Pays de résidence" value={personne?.paysNaissance || ""} />
                   <Field label="Nationalité du client" value={personne?.paysNaissance || ""} />
                 </div>
               </SectionCard>
 
-              <SectionCard title="Adresse" error="Champs obligatoires manquants">
+              <SectionCard title="Adresse">
                 <div className="grid gap-3 md:grid-cols-5">
-                  <Field label="N° de téléphone" value="0022468920014" required error="10/12/14 suivi de 9 chiffres ou +224 suivi de 9 chiffres" />
-                  <Field label="Email" required error="Champ obligatoire manquant" />
+                  <Field label="N° de téléphone" value={personne?.mobile || ""} success={personne?.mobile !== "" && personne?.mobile !== undefined} error={personne?.mobile === "" ? "Ce champ est obligatoire" : undefined} />
                   <Field label="Sous tutelle/curelle" />
                   <Field label="Pays de résidence" value="GN" />
                   <Field label="Commune de l’adresse" value="Conakry, Plateau" />
-                  <Field label="Adresse" value="Conakry, Plateau" />
-                  <Field label="Code postal" required error="Champ obligatoire manquant" />
+                  <Field label="Adresse" value={personne?.adresse || ""} success={personne?.adresse !== "" && personne?.adresse !== undefined} error={personne?.adresse === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Code postal" required  />
                 </div>
                 {/* <div className="mt-3 rounded-md bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">Liste des erreurs</div> */}
               </SectionCard>
@@ -212,23 +229,6 @@ export default function PersonnePhysiqueDetail() {
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-4 py-3">
                 <h2 className="text-base font-semibold text-slate-800">Liste des pièces d’identité</h2>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Rechercher"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                    />
-                    <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  </div>
-                  {/* <button
-                    type="button"
-                    onClick={() => setShowPieceModal(true)}
-                    className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
-                  >
-                    Ajouter une pièce
-                  </button> */}
-                </div>
               </div>
               <div className="overflow-auto">
                 <table className="min-w-full text-sm">
@@ -242,13 +242,19 @@ export default function PersonnePhysiqueDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {personne?.piece?.map((piece, idx) => (
+                    {!personne?.piece || personne?.piece?.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-3 py-2 text-center text-slate-600">
+                          Aucune pièce d'identité disponible.
+                        </td>
+                      </tr>
+                    ) : personne?.piece?.map((piece, idx) => (
                       <tr key={piece.numPiece} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
                         <td className="px-3 py-2">{piece.numPiece}</td>
                         <td className="px-3 py-2">{piece.paysEmiPiece}</td>
                         <td className="px-3 py-2">{piece.lieuEmiPiece}</td>
-                        <td className="px-3 py-2">{piece.datEmiPiece}</td>
-                        <td className="px-3 py-2">{piece.finValPiece}</td>
+                        <td className="px-3 py-2">{formatDate(piece.datEmiPiece)}</td>
+                        <td className="px-3 py-2">{formatDate(piece.finValPiece)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -259,23 +265,6 @@ export default function PersonnePhysiqueDetail() {
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-4 py-3">
                 <h2 className="text-base font-semibold text-slate-800">Liste des comptes associés</h2>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Rechercher"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                    />
-                    <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  </div>
-                  {/* <button
-                    type="button"
-                    onClick={() => setShowCompteModal(true)}
-                    className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
-                  >
-                    Ajouter un compte
-                  </button> */}
-                </div>
               </div>
               <div className="overflow-auto">
                 <table className="min-w-full text-sm">
@@ -290,7 +279,13 @@ export default function PersonnePhysiqueDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {personne?.compteAssocie?.map((compte, idx) => (
+                    {personne?.compteAssocie === undefined || personne?.compteAssocie.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-3 py-2 text-center text-slate-600">
+                          Aucun compte associé disponible.
+                        </td>
+                      </tr>
+                    ) : personne?.compteAssocie?.map((compte, idx) => (
                       <tr key={compte.numCpt} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
                         <td className="px-3 py-2">{idx + 1}</td>
                         <td className="px-3 py-2">{compte.codAgce}</td>
@@ -306,9 +301,30 @@ export default function PersonnePhysiqueDetail() {
             </div>
           ) : currentStep === 3 ? (
             <div className="space-y-4">
-              <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+              {personne?.donneeComplementaire && personne.donneeComplementaire.length > 0 ? (
+                <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+                  <div className="border-b border-slate-200 px-4 py-3">
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Données complémentaires</h2>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Field label="Revenu mensuel moyen" />
+                      <Field label="Dépenses mensuelles moyennes" />
+                      <Field label="Propriétaire/Locataire" />
+                      <Field label="Nbre de personnes à charge" />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-slate-200 bg-white px-4 py-6 shadow-sm text-sm text-slate-600 text-center">
+                  Aucune donnée complémentaire disponible.
+                </div>
+              )}
+
+
+              {/* <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
                 <div className="border-b border-slate-200 px-4 py-3">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Données complémentaires</h2>
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Tuteur</h2>
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="grid gap-3 md:grid-cols-2">
@@ -317,31 +333,39 @@ export default function PersonnePhysiqueDetail() {
                     <Field label="Propriétaire/Locataire" />
                     <Field label="Nbre de personnes à charge" />
                   </div>
-                  <div>
-                    <button className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
-                      Valider
-                    </button>
+                </div>
+              </div> */}
+
+              {personne?.employeur && personne.employeur.length > 0 ? (
+                <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+                  <div className="border-b border-slate-200 px-4 py-3">
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Employeur</h2>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Field label="Revenu mensuel moyen" />
+                      <Field label="Dépenses mensuelles moyennes" />
+                      <Field label="Propriétaire/Locataire" />
+                      <Field label="Nbre de personnes à charge" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : null}
 
-              <div className="rounded-md border border-slate-200 bg-white">
-                <button className="w-full px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  Tuteur
-                </button>
-              </div>
+              {/* <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-200 px-4 py-3">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Informations additionnelles</h2>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Field label="Revenu mensuel moyen" />
+                    <Field label="Dépenses mensuelles moyennes" />
+                    <Field label="Propriétaire/Locataire" />
+                    <Field label="Nbre de personnes à charge" />
+                  </div>
+                </div>
+              </div> */}
 
-              <div className="rounded-md border border-slate-200 bg-white">
-                <button className="w-full px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  Employeur
-                </button>
-              </div>
-
-              <div className="rounded-md border border-slate-200 bg-white">
-                <button className="w-full px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  Informations additionnelles
-                </button>
-              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-slate-200 bg-white px-4 py-6 shadow-sm text-sm text-slate-600">
@@ -361,9 +385,10 @@ export default function PersonnePhysiqueDetail() {
             {currentStep === timelineSteps.length - 1 ? (
               <button
                 type="button"
-                className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a4587]"
+                disabled
+                className="rounded-md bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500 cursor-not-allowed"
               >
-                Valider cette personne physique
+                Finalisation
               </button>
             ) : (
               <button
@@ -376,89 +401,6 @@ export default function PersonnePhysiqueDetail() {
             )}
           </div>
         </div>
-
-        {showPieceModal ? (
-          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 px-4 py-10">
-            <div className="w-full max-w-4xl rounded-lg bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-800">Informations de pièce d’identité</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowPieceModal(false)}
-                  className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
-                >
-                  <IoClose size={18} />
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="Type de pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Numéro de pièce" required />
-                  <Field label="Pays émission pièce" required />
-                  <Field label="Lieu émission pièce" required />
-                  <Field label="Date émission pièce" required error="Ce champ est obligatoire" />
-                  <Field label="Date fin validité pièce" required error="Ce champ est obligatoire" />
-                </div>
-              </div>
-              <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">
-                <button
-                  type="button"
-                  className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                  onClick={() => setShowPieceModal(false)}
-                >
-                  Fermer
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
-                >
-                  Valider
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {showCompteModal ? (
-          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 px-4 py-10">
-            <div className="w-full max-w-3xl rounded-lg bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-800">Informations de compte associé</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowCompteModal(false)}
-                  className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
-                >
-                  <IoClose size={18} />
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="Agence du compte" required error="Sélectionnez une valeur" />
-                  <Field label="Type de compte" required />
-                  <Field label="N° de compte" required />
-                  <Field label="Clé RIB" required />
-                  <Field label="Statut du compte" required />
-                </div>
-              </div>
-              <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-4 py-3">
-                <button
-                  type="button"
-                  className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                  onClick={() => setShowCompteModal(false)}
-                >
-                  Fermer
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
-                >
-                  Valider
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </main>
     </div>
   )
