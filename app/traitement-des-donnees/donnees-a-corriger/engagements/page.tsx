@@ -174,9 +174,13 @@ export default function EngagementsPage() {
   
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(data, "text/xml");
-      const personnesElements = xmlDoc.querySelectorAll("Engagement");
-      const mapped = Array.from(personnesElements).map(el => {
-  
+      if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+        throw new Error("Erreur lors du parsing XML: Le format du document n'est pas valide");
+      }
+
+      const engagementsElements = xmlDoc.querySelectorAll("Engagement");
+      const mapped = Array.from(engagementsElements).map(el => {
+
           const beneficiaires = Array.from(el.querySelectorAll("Beneficiaire")).map(beneficiaire => ({
             IdIntBen: beneficiaire.getAttribute("IdIntBen") || "",
             PourBenef: beneficiaire.getAttribute("PourBenef") || "",
@@ -246,7 +250,6 @@ export default function EngagementsPage() {
           }
       });
       setEngagements(mapped);
-      console.log('Engagements récupérés :', mapped);
       setCountLines(mapped.length);
       return mapped.length;
     } catch (error) {
@@ -354,7 +357,7 @@ export default function EngagementsPage() {
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
           <div className="mb-6">
-            <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques</h1>
+            <h1 className="text-lg font-semibold text-slate-800">Liste des données de engagements</h1>
           </div>
 
 
