@@ -95,7 +95,8 @@ export default function PersonnesPhysiquesPage() {
   const [countLines, setCountLines] = useState(0);
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+  const [pageSize, setPageSize] = useState(10)
+  const itemsPerPage = pageSize
 
   // useEffect pour initialiser le sidebar depuis le client seulement
   useEffect(() => {
@@ -360,6 +361,11 @@ export default function PersonnesPhysiquesPage() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedPersonnes = filteredPersonnes.slice(startIndex, endIndex);
 
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize)
+    setCurrentPage(1)
+  }
+
   // Réinitialiser la page quand la recherche change
   useEffect(() => {
     setCurrentPage(1);
@@ -492,6 +498,8 @@ export default function PersonnesPhysiquesPage() {
             endIndex={endIndex}
             filteredLength={filteredPersonnes.length}
             onPageChange={setCurrentPage}
+            pageSize={pageSize}
+            onPageSizeChange={handlePageSizeChange}
           />
 
 
