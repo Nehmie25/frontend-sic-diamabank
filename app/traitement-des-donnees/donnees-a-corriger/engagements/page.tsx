@@ -354,7 +354,7 @@ export default function EngagementsPage() {
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
           <div className="mb-6">
-            <h1 className="text-lg font-semibold text-slate-800">Liste des données de personnes physiques</h1>
+            <h1 className="text-lg font-semibold text-slate-800">Liste des données de engagements</h1>
           </div>
 
 
