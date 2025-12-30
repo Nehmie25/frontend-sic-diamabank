@@ -174,9 +174,13 @@ export default function EngagementsPage() {
   
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(data, "text/xml");
-      const personnesElements = xmlDoc.querySelectorAll("Engagement");
-      const mapped = Array.from(personnesElements).map(el => {
-  
+      if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+        throw new Error("Erreur lors du parsing XML: Le format du document n'est pas valide");
+      }
+
+      const engagementsElements = xmlDoc.querySelectorAll("Engagement");
+      const mapped = Array.from(engagementsElements).map(el => {
+
           const beneficiaires = Array.from(el.querySelectorAll("Beneficiaire")).map(beneficiaire => ({
             IdIntBen: beneficiaire.getAttribute("IdIntBen") || "",
             PourBenef: beneficiaire.getAttribute("PourBenef") || "",
@@ -246,7 +250,6 @@ export default function EngagementsPage() {
           }
       });
       setEngagements(mapped);
-      console.log('Engagements récupérés :', mapped);
       setCountLines(mapped.length);
       return mapped.length;
     } catch (error) {
