@@ -11,8 +11,16 @@ type Engagement = {
   typEve: string;
   refIntEng: string;
   ligneParent: string;
+  refIntLigne: string;
+  refDemandeEng: string;
+  datDem: string;
   typeModif: string;
+  typRestruc: string;
+  estDout: string;
   cloture: string;
+  motifCloture: string;
+  datClo: string;
+  datAccord: string;
   dateMEP: string;
   typEng: string;
   mntEng: string;
@@ -21,10 +29,15 @@ type Engagement = {
   periodRemb: string;
   txIntEng: string;
   typTxInt: string;
+  txComm: string;
+  indRef: string;
+  sprd: string;
   txEffGlob: string;
   moyRemb: string;
   typAmo: string;
   typDiffAmo: string;
+  unitDur: string;
+  perDiffAmo: string;
   mntEch: string;
   nbrEch: string;
   datPremEch: string;
@@ -33,24 +46,41 @@ type Engagement = {
   mntComm: string;
   codAgce: string;
   estRachatCreance: string;
+  parCont: string;
+  valNom: string;
+  valCess: string;
   datEvent: string;
-  beneficiaire:Array<{
+  beneficiaire: Array<{
     IdIntBen: string;
     PourBenef: string;
-  }>
+  }>;
+  garantie: Array<{
+    RefIntGar: string;
+    TypGar: string;
+    DesGar: string;
+    CodDev: string;
+    MntGar: string;
+    TypIdent: string;
+    CodIdent: string;
+    DatEval: string;
+    DatExp: string;
+    MntAffecGar: string;
+    StatutGarantie: string;
+    IdIntGarant: string;
+  }>;
 }
 
-const stepLabels = ["Informations engagement", "Garanties", "Échéancier", "Infos complémentaires"]
+const stepLabels = ["Informations engagement", "Garanties", "Infos complémentaires"]//echéancier" a été retiré
 
-const garanties = [
-  { type: "Hypothèque", valeur: "120 000 000", reference: "GAR-001", date: "2024-01-12" },
-  { type: "Caution personnelle", valeur: "50 000 000", reference: "GAR-002", date: "2024-01-12" },
-]
+// const garanties = [
+//   { type: "Hypothèque", valeur: "120 000 000", reference: "GAR-001", date: "2024-01-12" },
+//   { type: "Caution personnelle", valeur: "50 000 000", reference: "GAR-002", date: "2024-01-12" },
+// ]
 
-const echeances = [
-  { numero: 1, date: "30/04/2025", montant: "5 000 000", statut: "À venir" },
-  { numero: 2, date: "30/07/2025", montant: "5 000 000", statut: "À venir" },
-]
+// const echeances = [
+//   { numero: 1, date: "30/04/2025", montant: "5 000 000", statut: "À venir" },
+//   { numero: 2, date: "30/07/2025", montant: "5 000 000", statut: "À venir" },
+// ]
 
 const SectionCard = ({ title, children, error }: { title: string; children: React.ReactNode; error?: string }) => (
   <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -62,9 +92,9 @@ const SectionCard = ({ title, children, error }: { title: string; children: Reac
       {error ? <IoCloseCircle className="text-red-500" /> : <IoCheckmarkCircle className="text-green-500" />}
     </div>
     <div className="p-4 space-y-3">{children}</div>
-    {error ? (
-      <div className="bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">Liste des erreurs</div>
-    ) : null}
+    {/* {error ? (
+      // <div className="bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">Liste des erreurs</div>
+    ) : null} */}
   </div>
 )
 
@@ -91,11 +121,17 @@ const Field = ({
       </label>
       <input
         defaultValue={value}
+        required={required}
         className={`w-full rounded-md border ${stateClass} px-3 py-2 text-sm text-slate-800 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
       />
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   )
+}
+
+const formatDate = (dateStr: string | undefined): string => {
+  if (!dateStr || dateStr.length !== 8) return dateStr || ""
+  return `${dateStr.slice(0, 2)}-${dateStr.slice(2, 4)}-${dateStr.slice(4, 8)}`
 }
 
 export default function EngagementDetail() {
@@ -108,6 +144,7 @@ export default function EngagementDetail() {
       setEngagement({
         ...parsed,
         beneficiaire: parsed.beneficiaire || [],
+        garantie: parsed.garantie || [],
       });
     }
   }, [])
@@ -157,24 +194,24 @@ export default function EngagementDetail() {
             <>
               <SectionCard title="Références de l’engagement" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Référence" value={engagement.refIntEng || ""} required success />
-                  <Field label="Type d’engagement" value={engagement.typEng || ""} required />
-                  <Field label="Montant accordé" value={engagement.mntEng || ""} required />
-                  <Field label="Devise" value={engagement.codDev || ""} />
-                  <Field label="Date de mise en place" value={engagement.dateMEP || ""} required />
-                  <Field label="Taux appliqué" value={engagement.txIntEng || ""} />
-                  <Field label="Durée (mois)" value={engagement.periodRemb || ""} />
-                  <Field label="Statut" value={engagement.cloture || ""} />
+                  <Field label="Référence" value={engagement.refIntEng || ""} required success={engagement.refIntEng !== ""} />
+                  <Field label="Type d’engagement" value={engagement.typEng || ""} required error={engagement.typEng === "" ? "Ce champ est obligatoire" : undefined} success={engagement.typEng !== ""} />
+                  <Field label="Montant accordé" value={engagement.mntEng || ""} required error={engagement.mntEng <= "00" ? "La valeur saisie doit être strictement supérieure à 0" : undefined} success={engagement.mntEng > "00"} />
+                  <Field label="Devise" value={engagement.codDev || ""} required error={engagement.codDev !== "GNF" ? "Donnée inexistante dans le référentiel" : undefined} success={engagement.codDev === "GNF"} />
+                  <Field label="Date de mise en place" value={formatDate(engagement.dateMEP) || ""} success required error={engagement.dateMEP === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Taux appliqué" value={engagement.txIntEng || ""} success error={engagement.txIntEng === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Durée (mois)" value={engagement.periodRemb || ""} success error={engagement.periodRemb === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Statut" value={engagement.cloture || ""} success error={engagement.cloture === "" ? "Ce champ est obligatoire" : undefined} />
                 </div>
               </SectionCard>
 
               <SectionCard title="Partie prenante" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-3">
-                  <Field label="Client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} required />
-                  <Field label="Identifiant client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} required />
-                  <Field label="Agence" value={engagement.codAgce || ""} />
-                  <Field label="Gestionnaire" value="Mamadou Bah" />
-                  <Field label="Objet du financement" value="Equipements industriels" />
+                  <Field label="Client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} success required error={engagement.beneficiaire?.[0]?.IdIntBen === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Identifiant client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} success required error={engagement.beneficiaire?.[0]?.IdIntBen === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Agence" value={engagement.codAgce || ""} success error={engagement.codAgce === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Gestionnaire" value={engagement.parCont || ""} success error={engagement.parCont === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Objet du financement" value={engagement.typEng || ""} success error={engagement.typEng === "" ? "Ce champ est obligatoire" : undefined} />
                 </div>
               </SectionCard>
             </>
@@ -211,64 +248,66 @@ export default function EngagementDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {garanties.map((garantie, idx) => (
-                      <tr key={garantie.reference} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
-                        <td className="px-3 py-2">{garantie.type}</td>
-                        <td className="px-3 py-2">{garantie.valeur}</td>
-                        <td className="px-3 py-2">{garantie.reference}</td>
-                        <td className="px-3 py-2">{garantie.date}</td>
+                    {engagement.garantie.map((garantie, idx) => (
+                      <tr key={garantie.RefIntGar} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+                        <td className="px-3 py-2">{garantie.TypGar}</td>
+                        <td className="px-3 py-2">{garantie.MntGar}</td>
+                        <td className="px-3 py-2">{garantie.RefIntGar}</td>
+                        <td className="px-3 py-2">{garantie.DatEval}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-          ) : currentStep === 2 ? (
-            <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between px-4 py-3">
-                <h2 className="text-base font-semibold text-slate-800">Échéancier</h2>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Rechercher"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                    />
-                    <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowCompteModal(true)}
-                    className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
-                  >
-                    Ajouter une échéance
-                  </button>
-                </div>
-              </div>
-              <div className="overflow-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
-                    <tr>
-                      <th className="px-3 py-2 text-left">N°</th>
-                      <th className="px-3 py-2 text-left">Date</th>
-                      <th className="px-3 py-2 text-left">Montant</th>
-                      <th className="px-3 py-2 text-left">Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {echeances.map((echeance, idx) => (
-                      <tr key={echeance.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
-                        <td className="px-3 py-2">{echeance.numero}</td>
-                        <td className="px-3 py-2">{echeance.date}</td>
-                        <td className="px-3 py-2">{echeance.montant}</td>
-                        <td className="px-3 py-2">{echeance.statut}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : currentStep === 3 ? (
+          ) 
+          // : currentStep === 2 ? (
+          //   <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+          //     <div className="flex items-center justify-between px-4 py-3">
+          //       <h2 className="text-base font-semibold text-slate-800">Échéancier</h2>
+          //       <div className="flex items-center gap-3">
+          //         <div className="relative">
+          //           <input
+          //             type="text"
+          //             placeholder="Rechercher"
+          //             className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+          //           />
+          //           <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          //         </div>
+          //         {/* <button
+          //           type="button"
+          //           onClick={() => setShowCompteModal(true)}
+          //           className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4587]"
+          //         >
+          //           Ajouter une échéance
+          //         </button> */}
+          //       </div>
+          //     </div>
+          //     <div className="overflow-auto">
+          //       <table className="min-w-full text-sm">
+          //         <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+          //           <tr>
+          //             <th className="px-3 py-2 text-left">N°</th>
+          //             <th className="px-3 py-2 text-left">Date</th>
+          //             <th className="px-3 py-2 text-left">Montant</th>
+          //             <th className="px-3 py-2 text-left">Statut</th>
+          //           </tr>
+          //         </thead>
+          //         <tbody>
+          //           {echeances.map((echeance, idx) => (
+          //             <tr key={echeance.numero} className={`${idx % 2 === 0 ? "bg-[#f9eaea]" : "bg-white"} hover:bg-blue-50`}>
+          //               <td className="px-3 py-2">{echeance.numero}</td>
+          //               <td className="px-3 py-2">{echeance.date}</td>
+          //               <td className="px-3 py-2">{echeance.montant}</td>
+          //               <td className="px-3 py-2">{echeance.statut}</td>
+          //             </tr>
+          //           ))}
+          //         </tbody>
+          //       </table>
+          //     </div>
+          //   </div>
+          // ) 
+          : currentStep === 2 ? (
             <div className="space-y-4">
               <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
                 <div className="border-b border-slate-200 px-4 py-3">
@@ -326,6 +365,7 @@ export default function EngagementDetail() {
               <button
                 type="button"
                 className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a4587]"
+                disabled={true}
               >
                 Valider cet engagement
               </button>
