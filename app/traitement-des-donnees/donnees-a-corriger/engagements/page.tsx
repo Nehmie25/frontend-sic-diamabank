@@ -252,7 +252,7 @@ export default function EngagementsPage() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue s'est produite";   
         console.error("Erreur lors de la récupération des données:", errorMessage);    
-        toast.error(`Erreur: ${errorMessage}`);
+        toast.error(`Erreur lors de la récupération des données`);
         return 0;
     }
   }

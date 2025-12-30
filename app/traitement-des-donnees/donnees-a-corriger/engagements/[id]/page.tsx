@@ -77,10 +77,10 @@ const stepLabels = ["Informations engagement", "Garanties", "Infos complémentai
 //   { type: "Caution personnelle", valeur: "50 000 000", reference: "GAR-002", date: "2024-01-12" },
 // ]
 
-const echeances = [
-  { numero: 1, date: "30/04/2025", montant: "5 000 000", statut: "À venir" },
-  { numero: 2, date: "30/07/2025", montant: "5 000 000", statut: "À venir" },
-]
+// const echeances = [
+//   { numero: 1, date: "30/04/2025", montant: "5 000 000", statut: "À venir" },
+//   { numero: 2, date: "30/07/2025", montant: "5 000 000", statut: "À venir" },
+// ]
 
 const SectionCard = ({ title, children, error }: { title: string; children: React.ReactNode; error?: string }) => (
   <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -121,11 +121,17 @@ const Field = ({
       </label>
       <input
         defaultValue={value}
+        required={required}
         className={`w-full rounded-md border ${stateClass} px-3 py-2 text-sm text-slate-800 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
       />
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   )
+}
+
+const formatDate = (dateStr: string | undefined): string => {
+  if (!dateStr || dateStr.length !== 8) return dateStr || ""
+  return `${dateStr.slice(0, 2)}-${dateStr.slice(2, 4)}-${dateStr.slice(4, 8)}`
 }
 
 export default function EngagementDetail() {
@@ -188,24 +194,24 @@ export default function EngagementDetail() {
             <>
               <SectionCard title="Références de l’engagement" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-4">
-                  <Field label="Référence" value={engagement.refIntEng || ""} required success />
-                  <Field label="Type d’engagement" value={engagement.typEng || ""} required />
-                  <Field label="Montant accordé" value={engagement.mntEng || ""} required />
-                  <Field label="Devise" value={engagement.codDev || ""} />
-                  <Field label="Date de mise en place" value={engagement.dateMEP || ""} required />
-                  <Field label="Taux appliqué" value={engagement.txIntEng || ""} />
-                  <Field label="Durée (mois)" value={engagement.periodRemb || ""} />
-                  <Field label="Statut" value={engagement.cloture || ""} />
+                  <Field label="Référence" value={engagement.refIntEng || ""} required success={engagement.refIntEng !== ""} />
+                  <Field label="Type d’engagement" value={engagement.typEng || ""} required error={engagement.typEng === "" ? "Ce champ est obligatoire" : undefined} success={engagement.typEng !== ""} />
+                  <Field label="Montant accordé" value={engagement.mntEng || ""} required error={engagement.mntEng <= "00" ? "La valeur saisie doit être strictement supérieure à 0" : undefined} success={engagement.mntEng > "00"} />
+                  <Field label="Devise" value={engagement.codDev || ""} required error={engagement.codDev !== "GNF" ? "Donnée inexistante dans le référentiel" : undefined} success={engagement.codDev === "GNF"} />
+                  <Field label="Date de mise en place" value={formatDate(engagement.dateMEP) || ""} success required error={engagement.dateMEP === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Taux appliqué" value={engagement.txIntEng || ""} success error={engagement.txIntEng === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Durée (mois)" value={engagement.periodRemb || ""} success error={engagement.periodRemb === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Statut" value={engagement.cloture || ""} success error={engagement.cloture === "" ? "Ce champ est obligatoire" : undefined} />
                 </div>
               </SectionCard>
 
               <SectionCard title="Partie prenante" error="Champs obligatoires manquants">
                 <div className="grid gap-3 md:grid-cols-3">
-                  <Field label="Client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} required />
-                  <Field label="Identifiant client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} required />
-                  <Field label="Agence" value={engagement.codAgce || ""} />
-                  <Field label="Gestionnaire" value={engagement.parCont || ""} />
-                  <Field label="Objet du financement" value={engagement.typEng || ""} />
+                  <Field label="Client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} success required error={engagement.beneficiaire?.[0]?.IdIntBen === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Identifiant client" value={engagement.beneficiaire?.[0]?.IdIntBen || ""} success required error={engagement.beneficiaire?.[0]?.IdIntBen === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Agence" value={engagement.codAgce || ""} success error={engagement.codAgce === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Gestionnaire" value={engagement.parCont || ""} success error={engagement.parCont === "" ? "Ce champ est obligatoire" : undefined} />
+                  <Field label="Objet du financement" value={engagement.typEng || ""} success error={engagement.typEng === "" ? "Ce champ est obligatoire" : undefined} />
                 </div>
               </SectionCard>
             </>
