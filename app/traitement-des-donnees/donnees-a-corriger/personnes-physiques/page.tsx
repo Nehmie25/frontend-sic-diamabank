@@ -80,6 +80,7 @@ type PersonnePhysique = {
 
 
 export default function PersonnesPhysiquesPage() {
+  const token = localStorage.getItem("token");
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
@@ -167,7 +168,11 @@ export default function PersonnesPhysiquesPage() {
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
     try {
-      const response = await fetch(`http://10.0.16.4:8081/declaration/personnephysique?date=${date}`)
+      const response = await fetch(`/api/personne-physiques?date=${encodeURIComponent(date)}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
@@ -224,6 +229,8 @@ export default function PersonnesPhysiquesPage() {
           dateCreation: emp.getAttribute("DateCreation") || "",
           dateEntree: emp.getAttribute("DateEntree") || "",
         }));
+
+
 
         return {
           id: parseInt(el.getAttribute("IdInterneClt") || "0"),
@@ -364,6 +371,11 @@ export default function PersonnesPhysiquesPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
+
+  if (!token) {
+    router.push("/connexion");
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">

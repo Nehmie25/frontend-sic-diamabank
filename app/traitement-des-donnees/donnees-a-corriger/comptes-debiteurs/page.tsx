@@ -59,7 +59,7 @@ export default function ComptesDebiteursPage() {
   const router = useRouter()
 
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/comptedebiteurs?date=${date}`)
+    const response = await fetch(`http://10.0.20.32:8181/declaration/comptedebiteurs?date=${date}`)
 
     const data = await response.text()
 

@@ -1,5 +1,5 @@
-import Dashboard from "@/components/Dashboard"
+import ConnexionPage from "@/app/connexion/page"
 
 export default function Home() {
-  return <Dashboard />
+  return <ConnexionPage />
 }

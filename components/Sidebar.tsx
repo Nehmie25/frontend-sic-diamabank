@@ -41,7 +41,7 @@ type SidebarProps = {
 const sections: Section[] = [
   {
     title: "Tableau de bord",
-    links: [{ icon: FaDesktop, label: "Tableau de bord", href: "/" }],
+    links: [{ icon: FaDesktop, label: "Tableau de bord", href: "/dashboard" }],
   },
   {
     title: "Traitement des données",

@@ -166,7 +166,7 @@ export default function EngagementsPage() {
 
   const fetchDataByDate = async (date: string) => {
     try {
-      const response = await fetch(`http://10.0.16.4:8081/declaration/engagements?date=${date}`)
+      const response = await fetch(`http://10.0.20.32:8181/declaration/engagements?date=${date}`)
       if (!response.ok) {
         throw new Error(`Erreur HTTP: Impossible de joindre le serveur: assurez-vous que le serveur soit en ligne ou contactez l'administrateur.`);
       }

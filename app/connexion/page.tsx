@@ -6,19 +6,42 @@ import { useRouter } from "next/navigation"
 
 export default function ConnexionPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!username.trim() || !password.trim()) return
+    if (!email.trim() || !password.trim()) return
     setLoading(true)
-    // Simulation simple : on redirige vers la page d'accueil
-    setTimeout(() => {
-      router.push("/")
-    }, 700)
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      // Stockage du token dans le localStorage
+      localStorage.setItem("token", data.token)
+      
+      // Redirection vers le dashboard
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 700)
+    } catch (error) {
+      console.error("Erreur de connexion:", error)
+      alert("Erreur de connexion. Veuillez réessayer.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,9 +58,9 @@ export default function ConnexionPage() {
             <input
               type="text"
               required
-              placeholder="Nom d'utilisateur"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             />
           </div>
