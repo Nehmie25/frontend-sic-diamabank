@@ -112,7 +112,14 @@ export default function EncoursEngagementsPage() {
   const [countLines, setCountLines] = useState(0);
   // Fonction pour appel api en get
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.20.32:8181/declaration/encours?date=${date}`)
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    const response = await fetch(`/api/encours-engagement?date=${encodeURIComponent(date)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`)
+    }
 
     const data = await response.text()
 

@@ -19,16 +19,7 @@ type Utilisateur = {
 }
 
 const utilisateurs: Utilisateur[] = [
-  { id: 1, nom: "AAA", prenoms: "BBS", telephone: "1020309200", login: "bkaba", email: "bintou.kaba@xxxbanque.com", actif: false },
-  { id: 2, nom: "AAA", prenoms: "BBS", telephone: "0020202020", login: "mbah", email: "mohamed.bah@xxxbanque.com", actif: false },
-  { id: 3, nom: "AAA", prenoms: "BWB", telephone: "38299892719", login: "hcamara", email: "hewa.camara@xxxbanque.com", actif: false },
-  { id: 4, nom: "AAA", prenoms: "BBS", telephone: "28792129", login: "ba", email: "ba@xxx.gn", actif: false },
-  { id: 5, nom: "AAA", prenoms: "BBS", telephone: "2027227221", login: "bb", email: "thiam@xxx.gn", actif: false },
-  { id: 6, nom: "AAA", prenoms: "BMB", telephone: "38393939", login: "kk", email: "kk@xxx.gn", actif: false },
-  { id: 7, nom: "AAA", prenoms: "BBS", telephone: "3339939339", login: "ddd", email: "riba@xxx.gn", actif: false },
-  { id: 8, nom: "AAA", prenoms: "BBA", telephone: "484948418", login: "ee", email: "rbah@xxx.gn", actif: false },
-  { id: 9, nom: "USER TEST", prenoms: "UT TEST", telephone: "22501010101", login: "lorem", email: "lorem@lipsum.com", actif: true },
-  { id: 10, nom: "AAA", prenoms: "BBS", telephone: "969696969", login: "mylla", email: "moustapha.sylla@xxxbanque.com", actif: false },
+ 
 ]
 
 const UsersPage = () => {

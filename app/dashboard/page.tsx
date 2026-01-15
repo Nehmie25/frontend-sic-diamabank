@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 
@@ -14,6 +15,7 @@ const metrics = [
   "Acquittements",
 ]
 
+ 
 const sections = [
   { title: "Personne Physique", total: 0, highlightValidations: true },
   { title: "Personne Morale", total: 0 },
@@ -21,6 +23,8 @@ const sections = [
   { title: "Encours d'engagement", total: 0 },
   { title: "Compte débiteurs", total: 0 },
 ]
+
+
 
 const DashboardSection = ({
   title,
@@ -61,6 +65,8 @@ const DashboardSection = ({
 )
 
 const Dashboard = () => {
+  const token = localStorage.getItem("token");
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
@@ -70,6 +76,11 @@ const Dashboard = () => {
   }, [])
 
   const handleToggleSidebar = () => setSidebarOpen((prev) => !prev)
+
+    if (!token) {
+    router.push("/connexion");
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-800">

@@ -3,6 +3,8 @@ import Image from "next/image"
 import { useState } from "react"
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"
 import { useRouter } from "next/navigation"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 export default function ConnexionPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -13,7 +15,11 @@ export default function ConnexionPage() {
 
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!email.trim() || !password.trim()) return
+    if (!email.trim() || !password.trim()) 
+    {
+      toast.info("veuillez remplir tous les champs", { autoClose: 1000 })
+      return
+    }
     setLoading(true)
     try {
       const response = await fetch("/api/login", {
@@ -23,22 +29,32 @@ export default function ConnexionPage() {
         },
         body: JSON.stringify({ email, password }),
       });
-      
-      if (!response.ok) {
-        throw new Error(`Erreur ${response.status}: ${response.statusText}`)
+      console.log("Response status:", response);
+      if (!response.ok && response.status === 401) {
+        toast.error("Identifiants incorrects. Veuillez réessayer.")
+        return
+      }
+
+      if (!response.ok && response.status === 500) {
+        toast.error("Erreur interne, veuillez contacter l'administrateur.")
+        return
       }
       
-      const data = await response.json()
-      // Stockage du token dans le localStorage
-      localStorage.setItem("token", data.token)
+
       
+      const data = await response.json()
+      console.log("Données reçues:", data)
+      if (data.token) {
+        // Stockage du token dans le localStorage
+        localStorage.setItem("token", data.token)
+      }
       // Redirection vers le dashboard
-      setTimeout(() => {
         router.push("/dashboard")
-      }, 700)
+        
     } catch (error) {
       console.error("Erreur de connexion:", error)
-      alert("Erreur de connexion. Veuillez réessayer.")
+      //alert("Erreur de connexion. Veuillez réessayer.")
+      toast.error("Échec de la connexion. Vérifiez vos identifiants.")
     } finally {
       setLoading(false)
     }
@@ -46,6 +62,7 @@ export default function ConnexionPage() {
 
   return (
     <div className="grid h-screen w-screen bg-white md:grid-cols-2">
+      
       <div className="flex flex-col items-center justify-center gap-8 px-10 py-12 bg-slate-50">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-semibold text-slate-800 tracking-wide">E-BILL - SIC</h1>
@@ -54,6 +71,8 @@ export default function ConnexionPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="w-full space-y-4 max-w-md">
+          <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeButton theme="light" />
+
           <div className="space-y-2">
             <input
               type="text"
