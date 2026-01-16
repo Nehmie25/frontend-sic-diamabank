@@ -1,52 +1,77 @@
 'use client'
 
-import { useState } from "react"
+import { use, useEffect, useState } from "react"
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoChevronDown, IoClose, IoCloseCircle } from "react-icons/io5"
 import { FaLock, FaUnlockAlt } from "react-icons/fa"
 import { MdPassword } from "react-icons/md"
+import { useRouter } from "next/navigation"
+
+
+
 
 type Utilisateur = {
   id: number
   nom: string
-  prenoms: string
-  telephone: string
-  login: string
+  role:string
   email: string
-  actif: boolean
+  isactive: boolean
 }
 
-const utilisateurs: Utilisateur[] = [
- 
-]
-
+const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 const UsersPage = () => {
+  
+  const router = useRouter()
+  const [users, setUsers] = useState<Utilisateur[]>([])
+  useEffect(() => {
+  //fetch users from API
+  try {
+    const fetchUsers = async () => {
+      const response = await fetch("/api/utilisateurs", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      })
+      const data = await response.json()
+      console.log("Utilisateurs récupérés :", data)
+      setUsers(data.data.Users || [])
+    }
+    fetchUsers()
+  } catch (error) {
+    console.error("Erreur lors de la récupération des utilisateurs :", error)
+  }
+  }, [])
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
   const [search, setSearch] = useState("")
   const [showModal, setShowModal] = useState(false)
-  const [users, setUsers] = useState<Utilisateur[]>(utilisateurs)
-  const [form, setForm] = useState({ nom: "", prenoms: "", telephone: "", login: "", email: "", actif: true })
+  const [form, setForm] = useState({ nom: "", email: "", motdepasse: "", confirm: "", role: "user", isactive: true })
 
   const filteredUsers = users.filter((user) => {
     const query = search.trim().toLowerCase()
     if (!query) return true
-    return [user.nom, user.prenoms, user.telephone, user.login, user.email].some((value) =>
+    return [user.nom, user.email, user.role].some((value) =>
       value.toLowerCase().includes(query)
     )
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const { nom, prenoms, telephone, login, email } = form
-    if (!nom || !prenoms || !telephone || !login || !email) return
+    const { nom, email, motdepasse, confirm, role } = form
+    if (!nom || !email || !motdepasse || !confirm || !role) return
     const newUser: Utilisateur = { ...form, id: Date.now() }
     setUsers((prev) => [...prev, newUser])
-    setForm({ nom: "", prenoms: "", telephone: "", login: "", email: "", actif: true })
+    setForm({ nom: "", email: "", motdepasse: "", confirm: "", role: "user", isactive: true })
     setShowModal(false)
+  }
+
+  
+  if (!token) {
+    router.push("/connexion");
+    return null;
   }
 
   return (
@@ -95,10 +120,8 @@ const UsersPage = () => {
                   <tr>
                     <th className="w-14 border border-slate-200 px-3 py-2 text-center">N°</th>
                     <th className="border border-slate-200 px-3 py-2 text-left">Nom</th>
-                    <th className="border border-slate-200 px-3 py-2 text-left">Prénoms</th>
-                    <th className="border border-slate-200 px-3 py-2 text-left">Téléphone</th>
-                    <th className="border border-slate-200 px-3 py-2 text-left">login</th>
                     <th className="border border-slate-200 px-3 py-2 text-left">E mail</th>
+                    <th className="border border-slate-200 px-3 py-2 text-left">Rôle</th>
                     <th className="w-12 border border-slate-200 px-3 py-2 text-center">status</th>
                     <th className="border border-slate-200 px-3 py-2 text-center">Actions</th>
                   </tr>
@@ -108,12 +131,10 @@ const UsersPage = () => {
                     <tr key={user.id} className={`${idx % 2 === 0 ? "bg-[#f5f7fb]" : "bg-white"} text-slate-700`}>
                       <td className="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-800">{user.id}</td>
                       <td className="border border-slate-200 px-3 py-2">{user.nom}</td>
-                      <td className="border border-slate-200 px-3 py-2">{user.prenoms}</td>
-                      <td className="border border-slate-200 px-3 py-2">{user.telephone}</td>
-                      <td className="border border-slate-200 px-3 py-2">{user.login}</td>
                       <td className="border border-slate-200 px-3 py-2">{user.email}</td>
+                      <td className="border border-slate-200 px-3 py-2">{user.role}</td>
                       <td className="border border-slate-200 px-3 py-2 text-center">
-                        {user.actif ? (
+                        {user.isactive ? (
                           <IoCheckmarkCircle className="mx-auto text-lg text-green-500" title="Actif" />
                         ) : (
                           <IoCloseCircle className="mx-auto text-lg text-red-500" title="Inactif" />
@@ -134,12 +155,12 @@ const UsersPage = () => {
                                 className="flex w-full items-center gap-2 rounded px-2 py-2 text-sm hover:bg-slate-50"
                                 onClick={() =>
                                   setUsers((prev) =>
-                                    prev.map((u) => (u.id === user.id ? { ...u, actif: !u.actif } : u))
+                                    prev.map((u) => (u.id === user.id ? { ...u, isactive: !u.isactive } : u))
                                   )
                                 }
                               >
-                                {user.actif ? <FaLock /> : <FaUnlockAlt />}
-                                <span>{user.actif ? "Désactiver" : "Activer"}</span>
+                                {user.isactive ? <FaLock /> : <FaUnlockAlt />}
+                                <span>{user.isactive ? "Désactiver" : "Activer"}</span>
                               </button>
                             </li>
                             <li>
@@ -219,36 +240,8 @@ const UsersPage = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Prénoms</label>
+                  <label className="text-sm font-semibold text-slate-700">Email</label>
                   <input
-                    required
-                    value={form.prenoms}
-                    onChange={(e) => setForm((f) => ({ ...f, prenoms: e.target.value }))}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Téléphone</label>
-                  <input
-                    required
-                    value={form.telephone}
-                    onChange={(e) => setForm((f) => ({ ...f, telephone: e.target.value }))}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Login</label>
-                  <input
-                    required
-                    value={form.login}
-                    onChange={(e) => setForm((f) => ({ ...f, login: e.target.value }))}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">E-mail</label>
-                  <input
-                    type="email"
                     required
                     value={form.email}
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -256,14 +249,43 @@ const UsersPage = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Statut</label>
+                  <label className="text-sm font-semibold text-slate-700">Mot de passe</label>
+                  <input
+                    required
+                    value={form.motdepasse}
+                    onChange={(e) => setForm((f) => ({ ...f, motdepasse: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">confirmez le mot de passe</label>
+                  <input
+                    required
+                    value={form.confirm}
+                    onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
+                  />
+                </div>
+                  <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">Rôle</label>
                   <select
-                    value={form.actif ? "actif" : "inactif"}
-                    onChange={(e) => setForm((f) => ({ ...f, actif: e.target.value === "actif" }))}
+                    value={form.role}
+                    onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
                     className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
                   >
-                    <option value="actif">Actif</option>
-                    <option value="inactif">Inactif</option>
+                    <option value="admin">admin</option>
+                    <option value="user">user</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">Statut</label>
+                  <select
+                    value={form.isactive ? "true" : "false"}
+                    onChange={(e) => setForm((f) => ({ ...f, isactive: e.target.value === "true" }))}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
+                  >
+                    <option value="true">Actif</option>
+                    <option value="false">Inactif</option>
                   </select>
                 </div>
               </div>
