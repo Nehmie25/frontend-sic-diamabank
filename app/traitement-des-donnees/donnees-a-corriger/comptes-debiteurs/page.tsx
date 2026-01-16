@@ -59,7 +59,14 @@ export default function ComptesDebiteursPage() {
   const router = useRouter()
 
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/comptedebiteurs?date=${date}`)
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    const response = await fetch(`/api/compte-debiteur?date=${encodeURIComponent(date)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`)
+    }
 
     const data = await response.text()
 

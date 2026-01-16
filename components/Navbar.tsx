@@ -24,6 +24,16 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const profileRef = useRef<HTMLDivElement | null>(null)
   const router = useRouter()
 
+  const handleClick = () => {
+    // Supprimer le token du localStorage
+    localStorage.removeItem("token")
+    // Rediriger vers la page de connexion
+    router.push("/connexion")
+    
+    // Supprimer les données du section storage
+    sessionStorage.clear()
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -120,10 +130,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
               <div className="h-px bg-slate-200" />
               <button
                 type="button"
-                onClick={() => {
-                  setOpenProfile(false)
-                  router.push("/connexion")
-                }}
+                onClick={handleClick}
                 className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-red-600 hover:bg-red-50"
               >
                 <FiLogOut className="text-base" />

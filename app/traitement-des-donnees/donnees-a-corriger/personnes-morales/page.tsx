@@ -148,7 +148,12 @@ export default function PersonnesMoralesPage() {
   }, [searchTerm])
 
   const fetchDataByDate = async (date: string) => {
-    const response = await fetch(`http://10.0.16.4:8081/declaration/personnemorale?date=${date}`)
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    const response = await fetch(`/api/personne-morale?date=${encodeURIComponent(date)}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    })
     const data = await response.text()
 
     const parser = new DOMParser()
