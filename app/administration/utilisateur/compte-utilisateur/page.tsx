@@ -8,6 +8,8 @@ import { IoCheckmarkCircle, IoChevronDown, IoClose, IoCloseCircle } from "react-
 import { FaLock, FaUnlockAlt } from "react-icons/fa"
 import { MdPassword } from "react-icons/md"
 import { useRouter } from "next/navigation"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 
 
@@ -25,24 +27,25 @@ const UsersPage = () => {
   
   const router = useRouter()
   const [users, setUsers] = useState<Utilisateur[]>([])
-  useEffect(() => {
-  //fetch users from API
-  try {
-    const fetchUsers = async () => {
+
+  const fetchUsers = async () => {
+    try {
       const response = await fetch("/api/utilisateurs", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
       })
       const data = await response.json()
-      console.log("Utilisateurs récupérés :", data)
       setUsers(data.data.Users || [])
+    } catch (error) {
+      console.error("Erreur lors de la récupération des utilisateurs :", error)
     }
-    fetchUsers()
-  } catch (error) {
-    console.error("Erreur lors de la récupération des utilisateurs :", error)
   }
+
+  useEffect(() => {
+    fetchUsers()
   }, [])
+
   const [sidebarOpen, setSidebarOpen] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : false
   )
@@ -61,11 +64,80 @@ const UsersPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const { nom, email, motdepasse, confirm, role } = form
-    if (!nom || !email || !motdepasse || !confirm || !role) return
-    const newUser: Utilisateur = { ...form, id: Date.now() }
-    setUsers((prev) => [...prev, newUser])
+    if (!nom || !email || !motdepasse || !confirm || !role){
+      toast.error(`Erreur lors de la récupération des données`);
+      
+    }
+    if (motdepasse !== confirm) {
+      toast.error("Les mots de passe ne correspondent pas.")
+      return
+    }
+    // Appel API pour ajouter l'utilisateur dans la route POST /api/utilisateurs
+    fetch("/api/utilisateurs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ nom, email, motdepasse, role, isactive: form.isactive }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.meta.status === 200) {
+          toast.success("Utilisateur ajouté avec succès.")
+          // Actualiser la liste des utilisateurs via useEffect
+          fetchUsers()
+        } else {
+          toast.error(data.message || "Erreur lors de l'ajout de l'utilisateur.")
+        }
+      })
+      .catch((error) => {
+        console.error("Erreur lors de l'ajout de l'utilisateur :", error)
+        toast.error("Erreur lors de l'ajout de l'utilisateur."+ error)
+      })
+
+    // Réinitialiser le formulaire et fermer le modal
     setForm({ nom: "", email: "", motdepasse: "", confirm: "", role: "user", isactive: true })
     setShowModal(false)
+  }
+
+  const handleStateToggle = (user: Utilisateur) => {
+    const userId = user.id;
+    if (!userId){
+      toast.error(`Erreur lors de la récupération des données`);
+      return;
+    }
+    console.log("Toggling state for user ID:", userId, "Current state:", user.isactive);
+    console.log("data stringify", JSON.stringify({
+      id: userId,
+      isactive: !user.isactive,
+    }));
+
+    fetch(`/api/utilisateurs`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        id: userId,
+        isactive: !user.isactive,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.meta.status === 200) {
+          toast.success(`Utilisateur ${user.isactive ? "désactivé" : "activé"} avec succès.`)
+          // Actualiser la liste des utilisateurs via useEffect
+          fetchUsers()
+        } else {
+          toast.error(data.message || "Erreur lors de la mise à jour du statut de l'utilisateur.")
+        }
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la mise à jour du statut de l'utilisateur :", error)
+        toast.error("Erreur lors de la mise à jour du statut de l'utilisateur."+ error)
+      })
   }
 
   
@@ -86,6 +158,7 @@ const UsersPage = () => {
 
       <main className="flex min-h-screen flex-col transition-all duration-200 md:ml-72">
         <Navbar onToggleSidebar={() => setSidebarOpen((v) => !v)} />
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeButton theme="light" />
 
         <div className="flex-1 overflow-auto px-4 pb-10 pt-6 sm:px-6">
           <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -153,17 +226,13 @@ const UsersPage = () => {
                               <button
                                 type="button"
                                 className="flex w-full items-center gap-2 rounded px-2 py-2 text-sm hover:bg-slate-50"
-                                onClick={() =>
-                                  setUsers((prev) =>
-                                    prev.map((u) => (u.id === user.id ? { ...u, isactive: !u.isactive } : u))
-                                  )
-                                }
+                                onClick={()=>handleStateToggle(user)}
                               >
                                 {user.isactive ? <FaLock /> : <FaUnlockAlt />}
                                 <span>{user.isactive ? "Désactiver" : "Activer"}</span>
                               </button>
                             </li>
-                            <li>
+                            {/* <li>
                               <button
                                 type="button"
                                 className="flex w-full items-center gap-2 rounded px-2 py-2 text-sm hover:bg-slate-50"
@@ -171,7 +240,7 @@ const UsersPage = () => {
                                 <MdPassword />
                                 <span>Réinitialiser password</span>
                               </button>
-                            </li>
+                            </li> */}
                           </ul>
                         </div>
                       </td>
@@ -229,6 +298,7 @@ const UsersPage = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4 px-4 py-4">
+            
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-slate-700">Nom</label>
@@ -242,6 +312,7 @@ const UsersPage = () => {
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-slate-700">Email</label>
                   <input
+                    type="email"
                     required
                     value={form.email}
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -251,6 +322,7 @@ const UsersPage = () => {
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-slate-700">Mot de passe</label>
                   <input
+                    type="password"
                     required
                     value={form.motdepasse}
                     onChange={(e) => setForm((f) => ({ ...f, motdepasse: e.target.value }))}
@@ -260,6 +332,7 @@ const UsersPage = () => {
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-slate-700">confirmez le mot de passe</label>
                   <input
+                    type="password"
                     required
                     value={form.confirm}
                     onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}

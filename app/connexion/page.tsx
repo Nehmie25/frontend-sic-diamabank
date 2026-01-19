@@ -4,6 +4,7 @@ import { useState } from "react"
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"
 import { useRouter } from "next/navigation"
 import { toast, ToastContainer } from "react-toastify"
+import { storeTokenData } from "@/lib/tokenUtils"
 import "react-toastify/dist/ReactToastify.css"
 
 export default function ConnexionPage() {
@@ -20,8 +21,8 @@ export default function ConnexionPage() {
       toast.info("veuillez remplir tous les champs", { autoClose: 1000 })
       return
     }
-    setLoading(true)
     try {
+      setLoading(true)
       const response = await fetch("/api/login", {
         method: "POST",
         headers: {
@@ -29,7 +30,6 @@ export default function ConnexionPage() {
         },
         body: JSON.stringify({ email, password }),
       });
-      console.log("Response status:", response);
       if (!response.ok && response.status === 401) {
         toast.error("Identifiants incorrects. Veuillez réessayer.")
         return
@@ -40,20 +40,19 @@ export default function ConnexionPage() {
         return
       }
       
-
-      
       const data = await response.json()
-      console.log("Données reçues:", data)
       if (data.token) {
-        // Stockage du token dans le localStorage
-        localStorage.setItem("token", data.token)
+        const success = storeTokenData(data.token)
+        if (success) {
+          toast.success("Connexion réussie !")
+        } else {
+          toast.warning("Connexion établie mais erreur lors du décodage du token")
+        }
       }
-      // Redirection vers le dashboard
-        router.push("/dashboard")
+      router.push("/dashboard")
         
     } catch (error) {
       console.error("Erreur de connexion:", error)
-      //alert("Erreur de connexion. Veuillez réessayer.")
       toast.error("Échec de la connexion. Vérifiez vos identifiants.")
     } finally {
       setLoading(false)

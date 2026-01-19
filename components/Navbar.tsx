@@ -23,16 +23,29 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const [openMonitoringModal, setOpenMonitoringModal] = useState(false)
   const profileRef = useRef<HTMLDivElement | null>(null)
   const router = useRouter()
+  const [name, setName] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+
 
   const handleClick = () => {
     // Supprimer le token du localStorage
-    localStorage.removeItem("token")
+    localStorage.clear()
     // Rediriger vers la page de connexion
     router.push("/connexion")
     
     // Supprimer les données du section storage
     sessionStorage.clear()
+
+    //
   }
+
+   useEffect(() => {
+    const userName = localStorage.getItem("userName");
+    const userEmail = localStorage.getItem("userEmail");
+    setName(userName);
+    setEmail(userEmail);
+  }, []);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -107,7 +120,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
             <Image src="/profile.png" alt="Profil" width={40} height={40} className="h-full w-full object-cover" />
           </div>
           <div className="flex items-center gap-1 text-sm font-semibold text-slate-800">
-            Musharof
+            {name}
             <IoChevronDown className={`text-slate-500 transition-transform ${openProfile ? "-rotate-180" : "rotate-0"}`} />
           </div>
         </button>
@@ -115,8 +128,8 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
         {openProfile ? (
           <div className="absolute right-0 top-14 w-64 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)]">
             <div className="mb-4">
-              <p className="text-sm font-semibold text-slate-800">Musharof Chowdhury</p>
-              <p className="text-xs text-slate-500">randomuser@pimjo.com</p>
+              <p className="text-sm font-semibold text-slate-800">{name}</p>
+              <p className="text-xs text-slate-500">{email}</p>
             </div>
             <div className="space-y-3 text-sm text-slate-700">
               {/* <button className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-slate-50">
