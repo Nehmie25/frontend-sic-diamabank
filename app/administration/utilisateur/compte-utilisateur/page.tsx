@@ -1,12 +1,11 @@
 'use client'
 
-import { use, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import Navbar from "@/components/Navbar"
 import Sidebar from "@/components/Sidebar"
 import { HiOutlineSearch } from "react-icons/hi"
 import { IoCheckmarkCircle, IoChevronDown, IoClose, IoCloseCircle } from "react-icons/io5"
 import { FaLock, FaUnlockAlt } from "react-icons/fa"
-import { MdPassword } from "react-icons/md"
 import { useRouter } from "next/navigation"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -27,8 +26,10 @@ const UsersPage = () => {
   
   const router = useRouter()
   const [users, setUsers] = useState<Utilisateur[]>([])
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const response = await fetch("/api/utilisateurs", {
         headers: {
@@ -40,6 +41,7 @@ const UsersPage = () => {
     } catch (error) {
       console.error("Erreur lors de la récupération des utilisateurs :", error)
     }
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -107,11 +109,6 @@ const UsersPage = () => {
       toast.error(`Erreur lors de la récupération des données`);
       return;
     }
-    console.log("Toggling state for user ID:", userId, "Current state:", user.isactive);
-    console.log("data stringify", JSON.stringify({
-      id: userId,
-      isactive: !user.isactive,
-    }));
 
     fetch(`/api/utilisateurs`, {
       method: "PUT",
@@ -188,18 +185,27 @@ const UsersPage = () => {
             </div>
 
             <div className="overflow-x-auto px-4 py-4 sm:px-6 sm:py-6">
-              <table className="min-w-full border border-slate-200 text-sm">
-                <thead className="bg-[#f3f6fb] text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  <tr>
-                    <th className="w-14 border border-slate-200 px-3 py-2 text-center">N°</th>
-                    <th className="border border-slate-200 px-3 py-2 text-left">Nom</th>
-                    <th className="border border-slate-200 px-3 py-2 text-left">E mail</th>
-                    <th className="border border-slate-200 px-3 py-2 text-left">Rôle</th>
-                    <th className="w-12 border border-slate-200 px-3 py-2 text-center">status</th>
-                    <th className="border border-slate-200 px-3 py-2 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-[#1E4F9B]"></div>
+                    <p className="text-slate-600">Chargement en cours...</p>
+                  </div>
+                </div>
+              ) : (
+                <table className="min-w-full border border-slate-200 text-sm">
+                  <thead className="bg-[#f3f6fb] text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <tr>
+                      <th className="w-14 border border-slate-200 px-3 py-2 text-center">N°</th>
+                      <th className="border border-slate-200 px-3 py-2 text-left">Nom</th>
+                      <th className="border border-slate-200 px-3 py-2 text-left">E mail</th>
+                      <th className="border border-slate-200 px-3 py-2 text-left">Rôle</th>
+                      <th className="w-12 border border-slate-200 px-3 py-2 text-center">status</th>
+                      <th className="border border-slate-200 px-3 py-2 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
                   {filteredUsers.map((user, idx) => (
                     <tr key={user.id} className={`${idx % 2 === 0 ? "bg-[#f5f7fb]" : "bg-white"} text-slate-700`}>
                       <td className="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-800">{user.id}</td>
@@ -255,7 +261,8 @@ const UsersPage = () => {
                     </tr>
                   ) : null}
                 </tbody>
-              </table>
+                </table>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-[#eef2f6] px-4 py-3 sm:px-6">
@@ -271,13 +278,13 @@ const UsersPage = () => {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-slate-700">
+              {/* <div className="flex items-center gap-2 text-sm text-slate-700">
                 <span className="text-slate-600">Afficher</span>
                 <div className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1 text-slate-700 shadow-sm">
                   <span>10</span>
                   <IoChevronDown className="text-slate-500" />
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

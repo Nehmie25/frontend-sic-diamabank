@@ -30,8 +30,15 @@ export default function ConnexionPage() {
         },
         body: JSON.stringify({ email, password }),
       });
+      
+      const data = await response.json()
+
+      if (!response.ok && data.status === false) {
+        toast.error(data.error || "Requête invalide. Veuillez vérifier les informations fournies.")
+        return
+      }
       if (!response.ok && response.status === 401) {
-        toast.error("Identifiants incorrects. Veuillez réessayer.")
+        toast.error(data.error || "Identifiants incorrects. Veuillez réessayer.")
         return
       }
 
@@ -40,16 +47,14 @@ export default function ConnexionPage() {
         return
       }
       
-      const data = await response.json()
       if (data.token) {
         const success = storeTokenData(data.token)
         if (success) {
-          toast.success("Connexion réussie !")
+          router.push("/dashboard")
         } else {
           toast.warning("Connexion établie mais erreur lors du décodage du token")
         }
       }
-      router.push("/dashboard")
         
     } catch (error) {
       console.error("Erreur de connexion:", error)

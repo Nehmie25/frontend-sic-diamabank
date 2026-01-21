@@ -59,7 +59,8 @@ const sections: Section[] = [
   {
     title: "Administration",
     links: [
-      { icon: ImUsers, label: "Compte utilisateurs", href: "/administration/utilisateur/compte-utilisateur" },    
+      { icon: ImUsers, label: "Compte utilisateurs", href: "/administration/utilisateur/compte-utilisateur" },
+      { icon: FaClipboardUser, label: "Historique des utilisateurs", href: "/administration/utilisateur/historique" },    
     ],
   },
 ]

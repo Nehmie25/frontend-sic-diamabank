@@ -77,10 +77,9 @@ type PersonnePhysique = {
   }>
 }
 
-
-
 export default function PersonnesPhysiquesPage() {
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token");
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
@@ -384,7 +383,7 @@ export default function PersonnesPhysiquesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f3f6fb] text-slate-800">
+    <div className="min-h-screen bg-[#f3f6fb] text-slate-800" >
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeButton theme="light" />
       <aside className="fixed left-0 top-0 h-full">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />

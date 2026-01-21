@@ -98,7 +98,6 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    console.log(body);
 
     const response = await fetch(
       `http://10.0.20.32:8181/users/updatestate`,
