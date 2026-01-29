@@ -51,6 +51,8 @@ const UsersPage = () => {
   )
   const [search, setSearch] = useState("")
   const [showModal, setShowModal] = useState(false)
+  const [showpopup, setShowpopup] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<Utilisateur | null>(null)
   const [form, setForm] = useState({ nom: "", email: "", motdepasse: "", confirm: "", role: "user", isactive: true })
 
   const filteredUsers = users.filter((user) => {
@@ -99,6 +101,51 @@ const UsersPage = () => {
     // Réinitialiser le formulaire et fermer le modal
     setForm({ nom: "", email: "", motdepasse: "", confirm: "", role: "user", isactive: true })
     setShowModal(false)
+  }
+
+  const handleReinitialiser = (e: React.FormEvent) => {
+    e.preventDefault()
+    const { motdepasse, confirm } = form
+    if (!motdepasse || !confirm) {
+      toast.error("Veuillez remplir tous les champs.")
+      return
+    }
+    if (motdepasse !== confirm) {
+      toast.error("Les mots de passe ne correspondent pas.")
+      return
+    }
+    // Appel API pour réinitialiser le mot de passe pour l'utilisateur sélectionné
+    if (!selectedUser) {
+      toast.error("Aucun utilisateur sélectionné pour la réinitialisation.")
+      return
+    }
+    fetch("/api/utilisateurs", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        userId: selectedUser.id,
+        motdepasse: form.motdepasse
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.meta?.status === 200) {
+          toast.success("Mot de passe réinitialisé avec succès.")
+          // Réinitialiser le formulaire
+          setForm({ ...form, motdepasse: "", confirm: "" })
+          setSelectedUser(null)
+          setShowpopup(false)
+        } else {
+          toast.error(data.message || "Erreur lors de la réinitialisation du mot de passe.")
+        }
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la réinitialisation du mot de passe :", error)
+        toast.error("Erreur lors de la réinitialisation du mot de passe."+ error)
+      })
   }
 
   const handleStateToggle = (user: Utilisateur) => {
@@ -232,15 +279,16 @@ const UsersPage = () => {
                                 <span>{user.isactive ? "Désactiver" : "Activer"}</span>
                               </button>
                             </li>
-                            {/* <li>
+                             <li>
                               <button
                                 type="button"
                                 className="flex w-full items-center gap-2 rounded px-2 py-2 text-sm hover:bg-slate-50"
+                                onClick={() => { setSelectedUser(user); setShowpopup(true); }}
                               >
                                 <MdPassword />
                                 <span>Réinitialiser password</span>
                               </button>
-                            </li> */}
+                            </li> 
                           </ul>
                         </div>
                       </td>
@@ -367,6 +415,65 @@ const UsersPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
+                  className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-md bg-[#1E4F9B] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#163c78]"
+                >
+                  Ajouter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {showpopup ? (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40 px-4 py-10">
+          <div className="w-full max-w-3xl rounded-lg bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <h3 className="text-sm font-semibold text-slate-800">Reinitialiser le mot de passe</h3>
+              <button
+                type="button"
+                onClick={() => setShowpopup(false)}
+                className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
+                aria-label="Fermer"
+              >
+                <IoClose size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleReinitialiser} className="space-y-4 px-4 py-4">
+            
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">Nouveau mot de passe</label>
+                  <input
+                    type="password"
+                    required
+                    value={form.motdepasse}
+                    onChange={(e) => setForm((f) => ({ ...f, motdepasse: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">Confirmer le mot de passe</label>
+                  <input
+                    type="password"
+                    required
+                    value={form.confirm}
+                    onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1E4F9B] focus:ring-1 focus:ring-[#1E4F9B]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowpopup(false)}
                   className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Annuler
