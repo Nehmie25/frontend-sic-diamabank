@@ -79,3 +79,41 @@ export function clearTokenData() {
   localStorage.removeItem('userRole')
   localStorage.removeItem('userId')
 }
+
+export function isTokenExpired(): boolean {
+  try {
+    const tokenData = getTokenData()
+    if (!tokenData || !tokenData.exp) {
+      return true
+    }
+    
+    // exp est en secondes, Date.now() est en millisecondes
+    const expirationTime = tokenData.exp * 1000
+    const currentTime = Date.now()
+    
+    // Le token est expiré si l'heure actuelle dépasse l'heure d'expiration
+    return currentTime > expirationTime
+  } catch (error) {
+    console.error('Erreur lors de la vérification du token:', error)
+    return true
+  }
+}
+
+export function getTimeUntilExpiration(): number {
+  try {
+    const tokenData = getTokenData()
+    if (!tokenData || !tokenData.exp) {
+      return 0
+    }
+    
+    const expirationTime = tokenData.exp * 1000
+    const currentTime = Date.now()
+    const timeLeft = expirationTime - currentTime
+    
+    // Retourner le temps restant en millisecondes (minimum 0)
+    return Math.max(0, timeLeft)
+  } catch (error) {
+    console.error('Erreur lors du calcul du temps restant:', error)
+    return 0
+  }
+}
